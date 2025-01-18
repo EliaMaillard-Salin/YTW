@@ -8,8 +8,8 @@ love.graphics.setDefaultFilter("nearest")
 -- Cette ligne permet de déboguer pas à pas dans ZeroBraneStudio
 if arg[#arg] == "-debug" then require("mobdebug").start() end
 
-local Player = require "Player"
-local Platform = require "Platform"
+local Player = require ("Player")
+local Platform = require ("Platform")
 
 local player
 local platform

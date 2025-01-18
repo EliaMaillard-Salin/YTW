@@ -1,6 +1,14 @@
-local playerStates = require("playerStates")
+local PlayerStates = require("PlayerStates")
 local PlayerFeeling = require("PlayerFeeling")
+
 Player = {}
+
+local STATES = {}
+STATES.DASHING = "dashing"
+STATES.IDLE = "idle"
+STATES.JUMPING = "jumping"
+STATES.FALLING = "falling"
+STATES.MOVING = "moving"
 
 function Player:New(x, y)
     local obj = {
@@ -25,12 +33,16 @@ function Player:New(x, y)
         dashDirection = " ",
         timer = 0, 
         hasDashedInAir = false,
-        states = playerStates,
-        currentState = "idle",
-        feeling = PlayerFeeling:Create()
+        states = PlayerStates,
+        currentState = STATES.IDLE,
+        feeling = nil,
+        currentFeeling = 0
     }
     setmetatable(obj, self)
     self.__index = self  
+    obj.feeling = PlayerFeeling:Create()
+    
+    print("Player created with state: " .. tostring(obj.state))  -- Debugging statement
     return obj
 end
 
@@ -50,18 +62,31 @@ function Player:Update(dt, platform)
 
     self:CheckCollisionWithPlatform(platform)
 
-    -- Gérer le cooldown du dash
     if self.dashCooldownTimer > 0 then
         self.dashCooldownTimer = self.dashCooldownTimer - dt
     end
 
+    self.feeling:Update(self, dt)
+
     self:HandleMovement(dt)
+
 
     if self.states[self.currentState].Update then
         self.states[self.currentState].Update(self, dt)
+    end    
+    self.y = self.y + self.speedY * dt
+
+    if (self.dashCooldownTimer <= 0 and self.dashCount < self.maxDash) then
+        love.graphics.setColor(255, 0, 0)
+    else
+        love.graphics.setColor(255, 255, 255)
     end
 
-    self.y = self.y + self.speedY * dt
+    if self.sprite then
+        love.graphics.draw(self.sprite, self.x, self.y)
+    else
+        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+    end
 end
 
 function Player:Draw()
@@ -79,9 +104,40 @@ function Player:Draw()
 end
 
 function Player:HandleMovement(dt)
-    -- Détection du dash
-    if love.keyboard.isDown('lshift') and self.dashCooldownTimer <= 0 then
+
+    local buttonPressed = 0
+    -- Vérifier si le joueur veut planer pendant la chute (par exemple avec la touche "space")
+    if self.currentFeeling == 1 then
+        if self.currentState == STATES.FALLING then
+            if love.keyboard.isDown("space") then  -- Si "space" est pressé
+                -- Appliquer l'effet de planage en réduisant la vitesse verticale
+                self.speedY = self.speedY * 0.85  -- Par exemple, réduire la vitesse de 2% à chaque frame
+            end
+        end
+        
+
+    end
+
+    if love.keyboard.isDown('u') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Neutral)
+        self.currentFeeling = 0
+    end
+    if love.keyboard.isDown('i') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Sadness)
+        self.currentFeeling = 1
+    end
+    if love.keyboard.isDown('o') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Anger)
+        self.currentFeeling = 2
+    end
+    if love.keyboard.isDown('p') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Joy)
+        self.currentFeeling = 3
+    end
+
+    if love.keyboard.isDown('lshift') and self.dashCooldownTimer <= 0 and buttonPressed < 1 then
         if self.onGround or (not self.onGround and not self.hasDashedInAir) then
+            buttonPressed = buttonPressed + 1
             if love.keyboard.isDown('d') and love.keyboard.isDown('z') then
                 self.dashDirection = "right_up"
             elseif love.keyboard.isDown('q') and love.keyboard.isDown('z') then
@@ -101,16 +157,18 @@ function Player:HandleMovement(dt)
             -- Initialisation du dash
             self.dashTimer = 0.2
             self.dashCount = self.dashCount + 1
+            buttonPressed = 0
             if not self.onGround then
                 self.hasDashedInAir = true
             end
             self.dashCooldownTimer = self.dashCooldown
-            self:changeState("dashing")
+            self:ChangeState(STATES.DASHING)
         end
     end
 
     -- Réinitialiser les dashs si au sol
     if self.onGround then
+        buttonPressed = 0
         self.hasDashedInAir = false
         self.dashCount = 0
     end
@@ -127,7 +185,7 @@ function Player:CheckCollisionWithPlatform(platform)
     end
 end
 
-function Player:changeState(newState)
+function Player:ChangeState(newState)
     -- Appeler la fonction `exit` de l'état courant
     if self.states[self.currentState].Exit then
         self.states[self.currentState].Exit(self)
@@ -140,6 +198,5 @@ function Player:changeState(newState)
     if self.states[self.currentState].Enter then
         self.states[self.currentState].Enter(self)
     end
-    end
-
+end
 return Player

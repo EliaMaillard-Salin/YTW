@@ -1,19 +1,26 @@
-playerStates = {}
+PlayerStates = {}
 
-playerStates.idle = {
+local STATES = {}
+STATES.DASHING = "dashing"
+STATES.IDLE = "idle"
+STATES.JUMPING = "jumping"
+STATES.FALLING = "falling"
+STATES.MOVING = "moving"
+
+PlayerStates.idle = {
     Enter = function(player)
         print("Entrée dans l'état 'idle'")
     end,
     Update = function(player, dt)
         -- Change Sprite
-        if love.keyboard.isDown("d") or love.keyboard.isDown("q") then
-            player:changeState("moving")
+        if not player.onGround then
+            player:ChangeState("falling")
+        elseif love.keyboard.isDown("d") or love.keyboard.isDown("q") then
+            player:ChangeState("moving")
         elseif love.keyboard.isDown("space") and player.onGround then
             player.speedY = player.jumpPower
             player.onGround = false
-            player:changeState("jumping") 
-        elseif not player.onGround then
-            player:changeState("falling")
+            player:ChangeState("jumping") 
         end
     end,
     Exit = function(player)
@@ -21,7 +28,7 @@ playerStates.idle = {
     end
 }
 
-playerStates.moving = {
+PlayerStates.moving = {
     Enter = function(player)
         print("Entrée dans l'état 'moving'")
     end,
@@ -31,13 +38,13 @@ playerStates.moving = {
         elseif love.keyboard.isDown("q") then
             player.x = player.x - player.speedX * dt
         else
-            player:changeState("idle")
+            player:ChangeState("idle")
         end
 
         if love.keyboard.isDown("space") and player.onGround then
             player.speedY = player.jumpPower
             player.onGround = false
-            player:changeState("jumping")
+            player:ChangeState("jumping")
         end
     end,
     Exit = function(player)
@@ -45,7 +52,7 @@ playerStates.moving = {
     end
 }
 
-playerStates.jumping = {
+PlayerStates.jumping = {
     Enter = function(player)
         print("Entrée dans l'état 'jumping'")
         if player.speedY == 0 then
@@ -66,7 +73,7 @@ playerStates.jumping = {
         end
 
         if player.speedY >= 0 then
-            player:changeState("falling")
+            player:ChangeState("falling")
         end
     end,
     Exit = function(player)
@@ -74,12 +81,13 @@ playerStates.jumping = {
     end
 }
 
-playerStates.falling = {
+PlayerStates.falling = {
     Enter = function(player)
         print("Entrée dans l'état 'falling'")
     end,
     Update = function(player, dt)
         -- Mouvement horizontal
+        
         if love.keyboard.isDown("d") then
             player.x = player.x + (player.speedX * dt)
         elseif love.keyboard.isDown("q") then
@@ -88,7 +96,7 @@ playerStates.falling = {
 
         -- Transition vers 'idle' si au sol
         if player.onGround then
-            player:changeState("idle")
+            player:ChangeState("idle")
         end
     end,
     Exit = function(player)
@@ -96,7 +104,7 @@ playerStates.falling = {
     end
 }
 
-playerStates.dashing = {
+PlayerStates.dashing = {
     Enter = function(player)
         print("Entrée dans l'état 'dashing'")
         player.dashStartX = player.x
@@ -113,11 +121,9 @@ playerStates.dashing = {
         elseif player.dashDirection == "right_up" then
             player.y = player.dashStartY - player.speedDistance * progress
             player.x = player.dashStartX + player.speedDistance * progress
-            player.dashCount = player.dashCount + 1
         elseif player.dashDirection == "left_up" then
             player.y = player.dashStartY - player.speedDistance * progress
             player.x = player.dashStartX - player.speedDistance * progress
-            player.dashCount = player.dashCount + 1
         elseif player.dashDirection == "left_down" then
             player.x = player.dashStartX - player.speedDistance * progress
             player.y = player.dashStartY + player.speedDistance * progress
@@ -127,8 +133,10 @@ playerStates.dashing = {
         end
 
         player.dashTimer = player.dashTimer - dt
+
+
         if player.dashTimer <= 0 then
-            player:changeState("idle")
+            player:ChangeState(STATES.IDLE)
         end
     end,
     Exit = function(player)
@@ -136,4 +144,4 @@ playerStates.dashing = {
     end
 }
 
-return playerStates
+return PlayerStates
