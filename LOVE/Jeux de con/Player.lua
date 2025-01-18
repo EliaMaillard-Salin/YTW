@@ -25,7 +25,9 @@ function Player:new(x, y)
         dashDirection = " ",
         timer = 0, 
         hasDashedInAir = false,
-        feeling = PlayerFeeling:Create()
+        feeling = PlayerFeeling:Create(),
+        feelingCount = 0,
+        changingState = false
     }
     setmetatable(obj, self)
     self.__index = self  
@@ -74,15 +76,23 @@ function Player:handleMovement(dt)
     -- Gérer le dash avec cooldown
     if love.keyboard.isDown('u') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Neutral)
+        self.feelingCount = 0
+        self.changingState = true
     end
     if love.keyboard.isDown('i') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Sadness)
+        self.feelingCount = 1
+        self.changingState = true
     end
     if love.keyboard.isDown('o') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Anger)
+        self.feelingCount = 2
+        self.changingState = true
     end
     if love.keyboard.isDown('p') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Joy)
+        self.feelingCount = 3
+        self.changingState = true
     end
 
     if love.keyboard.isDown('lshift') and self.dashCooldownTimer <= 0 then
