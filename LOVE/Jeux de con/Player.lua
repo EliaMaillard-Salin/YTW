@@ -3,6 +3,11 @@ local playerStates = require("playerStates")
 Player = {}
 
 function Player:New(x, y)
+require ("PlayerFeeling")
+
+Player = {}
+
+function Player:new(x, y)
     local obj = {
         x = x,
         y = y,
@@ -27,6 +32,7 @@ function Player:New(x, y)
         hasDashedInAir = false,
         states = playerStates,
         currentState = "idle",
+        feeling = PlayerFeeling:Create()
     }
     setmetatable(obj, self)
     self.__index = self  
