@@ -65,7 +65,6 @@ playerStates.jumping = {
             player.direction = "left"
         end
 
-
         if player.speedY >= 0 then
             player:changeState("falling")
         end

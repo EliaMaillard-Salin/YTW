@@ -9,9 +9,16 @@ local FeelingsEnum = {
         end,
         Update = function()
             print("Sadness Update")
+            if player.state[player.currentState] = "falling" and love.keyboard.isDown('space') then
+                player.gravity = 400
+
+            if not player.state[player.currentState] = "falling" then
+                player.gravity = 800   
         end,
         Exit = function()
             print("Sadness Exit")
+            if not player.gravity == 800 then
+                player.gravity = 800
         end
     },
     
@@ -131,3 +138,4 @@ function PlayerFeeling:Exit()
     self.state:Exit()
 end
 
+return PlayerFeeling

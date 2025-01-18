@@ -1,13 +1,8 @@
 local playerStates = require("playerStates")
-
+local PlayerFeeling = require("PlayerFeeling")
 Player = {}
 
 function Player:New(x, y)
-require ("PlayerFeeling")
-
-Player = {}
-
-function Player:new(x, y)
     local obj = {
         x = x,
         y = y,
@@ -85,7 +80,6 @@ end
 
 function Player:HandleMovement(dt)
     -- Détection du dash
-    print(self.dashCount)
     if love.keyboard.isDown('lshift') and self.dashCooldownTimer <= 0 then
         if self.onGround or (not self.onGround and not self.hasDashedInAir) then
             if love.keyboard.isDown('d') and love.keyboard.isDown('z') then
@@ -146,6 +140,6 @@ function Player:changeState(newState)
     if self.states[self.currentState].Enter then
         self.states[self.currentState].Enter(self)
     end
-end
+    end
 
 return Player
