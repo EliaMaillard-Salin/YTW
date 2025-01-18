@@ -12,7 +12,7 @@ function Platform:Create(posX, posY, width, height, isBreakable) --float, float,
         scaleY = 1,
         breakable = isBreakable
     }
-    setmetatable(plat, Platform)
+    setmetatable(plat, self)
     self.__index = self
     return plat
 end
@@ -26,6 +26,8 @@ function Platform:SetSprite(imgpath) --string
     self.hasSprite = true
     local image = love.graphics.newImage(imgpath)
     self.sprite = image
+    self.width = self.sprite:getWidth()
+    self.height = self.sprite:getHeight()
 end
 
 function Platform:Draw()

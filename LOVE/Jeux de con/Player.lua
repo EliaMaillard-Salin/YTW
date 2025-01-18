@@ -1,3 +1,5 @@
+require ("PlayerFeeling")
+
 Player = {}
 
 function Player:new(x, y)
@@ -23,6 +25,7 @@ function Player:new(x, y)
         dashDirection = " ",
         timer = 0, 
         hasDashedInAir = false,
+        feeling = PlayerFeeling:Create()
     }
     setmetatable(obj, self)
     self.__index = self  
@@ -36,10 +39,10 @@ function Player:load()
     end
 end
 
-function Player:update(dt, platform)
-    self.speedY = self.speedY + self.gravity * dt
+function Player:update(dt)
+    --self.feeling.Update()
 
-    self:checkCollisionWithPlatform(platform)
+    self.speedY = self.speedY + self.gravity * dt
 
     -- Gérer le cooldown du dash
     if self.dashCooldownTimer > 0 then
@@ -69,6 +72,19 @@ end
 
 function Player:handleMovement(dt)
     -- Gérer le dash avec cooldown
+    if love.keyboard.isDown('u') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Neutral)
+    end
+    if love.keyboard.isDown('i') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Sadness)
+    end
+    if love.keyboard.isDown('o') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Anger)
+    end
+    if love.keyboard.isDown('p') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Joy)
+    end
+
     if love.keyboard.isDown('lshift') and self.dashCooldownTimer <= 0 then
         -- Si le joueur est au sol ou qu'il n'a pas encore effectué de dash en l'air
         if self.onGround or (not self.onGround and not self.hasDashedInAir) then
