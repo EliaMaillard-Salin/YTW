@@ -70,6 +70,7 @@ function World:Update(dt, player)
     local offsetX = player.x - self.camera.x
     self.camera.x = player.x
     self.parallax:Update(dt, offsetX)
+    
 end
 
 

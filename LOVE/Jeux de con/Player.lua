@@ -6,6 +6,8 @@ function Player:new(x, y)
     local obj = {
         x = x,
         y = y,
+        dirX = 0, 
+        dirY = 0,
         speedX = 150,  
         speedY = 0,    
         jumpPower = -300,  
@@ -53,8 +55,7 @@ function Player:update(dt)
 
     self.timer = self.timer + dt
     self:handleMovement(dt)
-
-    self.y = self.y + self.speedY * dt
+    self:Move(dt)
 end
 
 function Player:draw()
@@ -169,10 +170,10 @@ function Player:handleMovement(dt)
     -- Mouvement normal (en dehors du dash)
     if love.keyboard.isDown('d') then
         self.direction = "right"
-        self.x = self.x + (self.speedX * dt)
+        self.dirX = 1
     elseif love.keyboard.isDown('q') then
         self.direction = "left"
-        self.x = self.x - (self.speedX * dt)
+        self.dirX = -1
     end
 
     if love.keyboard.isDown('space') and self.onGround then
@@ -191,6 +192,11 @@ function Player:checkCollisionWithPlatform(platform)
         self.speedY = 0
         self.onGround = true 
     end
+end
+
+function  Player:Move(dt)
+    self.x = self.x + (self.dirX * self.speedX * dt)
+    self.y = self.y +  ( self.speedY * dt )
 end
 
 return Player
