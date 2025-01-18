@@ -1,9 +1,13 @@
+require ("PlayerFeeling")
+
 Player = {}
 
 function Player:new(x, y)
     local obj = {
         x = x,
         y = y,
+        dirX = 0, 
+        dirY = 0,
         speedX = 150,  
         speedY = 0,    
         jumpPower = -300,  
@@ -25,6 +29,9 @@ function Player:new(x, y)
         hasDashedInAir = false,
         mSpeed = 0,  
         mDirection = {x = 0, y = 0},
+        feeling = PlayerFeeling:Create(),
+        feelingCount = 0,
+        changingState = false
     }
     setmetatable(obj, self)
     self.__index = self  
@@ -38,10 +45,10 @@ function Player:load()
     end
 end
 
-function Player:update(dt, platform)
-    self.speedY = self.speedY + self.gravity * dt
+function Player:update(dt)
+    --self.feeling.Update()
 
-    self:checkCollisionWithPlatform(platform)
+    self.speedY = self.speedY + self.gravity * dt
 
     -- Gérer le cooldown du dash
     if self.dashCooldownTimer > 0 then
@@ -50,8 +57,7 @@ function Player:update(dt, platform)
 
     self.timer = self.timer + dt
     self:handleMovement(dt)
-
-    self.y = self.y + self.speedY * dt
+    self:Move(dt)
 end
 
 function Player:draw()
@@ -71,6 +77,27 @@ end
 
 function Player:handleMovement(dt)
     -- Gérer le dash avec cooldown
+    if love.keyboard.isDown('u') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Neutral)
+        self.feelingCount = 0
+        self.changingState = true
+    end
+    if love.keyboard.isDown('i') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Sadness)
+        self.feelingCount = 1
+        self.changingState = true
+    end
+    if love.keyboard.isDown('o') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Anger)
+        self.feelingCount = 2
+        self.changingState = true
+    end
+    if love.keyboard.isDown('p') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Joy)
+        self.feelingCount = 3
+        self.changingState = true
+    end
+
     if love.keyboard.isDown('lshift') and self.dashCooldownTimer <= 0 then
         -- Si le joueur est au sol ou qu'il n'a pas encore effectué de dash en l'air
         if self.onGround or (not self.onGround and not self.hasDashedInAir) then
@@ -145,10 +172,10 @@ function Player:handleMovement(dt)
     -- Mouvement normal (en dehors du dash)
     if love.keyboard.isDown('d') then
         self.direction = "right"
-        self.x = self.x + (self.speedX * dt)
+        self.dirX = 1
     elseif love.keyboard.isDown('q') then
         self.direction = "left"
-        self.x = self.x - (self.speedX * dt)
+        self.dirX = -1
     end
 
     if love.keyboard.isDown('space') and self.onGround then
@@ -214,6 +241,10 @@ function Normalize(vector)
     vector.x = vector.x / magnitude
     vector.y = vector.y / magnitude
     return true
+end
+function  Player:Move(dt)
+    self.x = self.x + (self.dirX * self.speedX * dt)
+    self.y = self.y +  ( self.speedY * dt )
 end
 
 return Player
