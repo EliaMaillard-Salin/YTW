@@ -112,15 +112,19 @@ function PlayerFeeling:Create()
                 end
             }
         },
-        state = FeelingsEnum.Neutral
+        state = nil
     }
     setmetatable(feeling, PlayerFeeling)
-    feeling.state.Enter()
     self.__index = self
+    feeling.state = feeling.allFeelings.Neutral
+    feeling.state.Enter()
     return feeling
 end
 
 function PlayerFeeling:SwitchFeeling(feeling) --table
+    if feeling == self.state then
+        return
+    end
     self:Exit()
     self.state = feeling
     self:Enter()
