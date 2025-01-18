@@ -1,5 +1,5 @@
+PlayerFeeling = {}
 
-PlayerFeeling = {} 
 
 function PlayerFeeling:Create()
     local feeling = 
@@ -12,44 +12,50 @@ function PlayerFeeling:Create()
                     Update = function()
                         --("Neutral Update")
                     end,
-                    Exit = function()
+                    Exit = function(player)
                         print("Neutral Exit")
                     end
             },
-            Sadness =     {
-                Enter = function()
+
+            Sadness = 
+            {
+                Enter = function(player)
                     print("Sadness")
                 end,
-                Update = function()
+                Update = function(player, dt)
                     print("Sadness Update")
                 end,
-                Exit = function()
+                Exit = function(player)
                     print("Sadness Exit")
                 end
             },
             
-            Anger = {
-                Enter = function()
+            Anger = 
+            {
+                Enter = function(player)
                     print("Anger")
                 end,
-                Update = function()
+                Update = function(player, dt)
                     print("Anger Update")
                 end,
-                Exit = function()
+                Exit = function(player)
                     print("Anger Exit")
                 end
             },
             
             
-            Joy = {
-                Enter = function()
+            Joy = 
+            {
+                Enter = function(player)
                     print("Joy")
+                    player.maxDash = 2
                 end,
-                Update = function()
+                Update = function(player, dt)
                     print("Joy Update")
                 end,
-                Exit = function()
+                Exit = function(player)
                     print("Joy Exit")
+                    player.maxDash = 1
                 end
             }
         },
@@ -83,3 +89,4 @@ function PlayerFeeling:Exit()
     self.state:Exit()
 end
 
+return PlayerFeeling
