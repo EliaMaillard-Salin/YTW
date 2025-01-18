@@ -8,23 +8,26 @@ love.graphics.setDefaultFilter("nearest")
 -- Cette ligne permet de déboguer pas à pas dans ZeroBraneStudio
 if arg[#arg] == "-debug" then require("mobdebug").start() end
 
+local Player = require "Player"
+local Platform = require "Platform"
+
+local player
+local platform
+
 function love.load()
   
-  largeur_ecran = love.graphics.getWidth()
-  hauteur_ecran = love.graphics.getHeight()
-  
+  player = Player:New(200, 100)
+  player:Load()
+
+  platform = Platform:new(0, love.graphics.getHeight() - 50, love.graphics.getWidth(), 50)
+
 end
 
 function love.update(dt)
-
+    player:Update(dt, platform)
 end
 
 function love.draw()
-    
-end
-
-function love.keypressed(key)
-  
-  print(key)
-  
+    platform:draw()
+    player:Draw()
 end
