@@ -1,6 +1,7 @@
 local Physics = {}
 
 local Player = require "Player"
+local Platform = require "Platform"
 
 local player = nil
 
@@ -43,100 +44,94 @@ function Physics.update(objects, dt)
     end
 end
 
-function Physics.Collision(object1, object2)
+function Physics.Collision(object1, object2,dt)
     local iscolliding = false
 
     -- Obtenir les positions et dimensions des objets
-    local x1, y1, width1, height1 = object1.x, object1.y, object1.width, object1.height
-    local x2, y2, width2, height2 = object2.x, object2.y, object2.width, object2.height
+    local playerX, playerY, playerWidth, playerHeight = object1.x, object1.y, object1.width, object1.height
+    local platX, platY, platWidth, platHeight = object2.x, object2.y, object2.width, object2.height
 
-    -- Vérifier les collisions
-    local x_collision = x1 < x2 + width2 and x1 + width1 > x2
-    local y_collision = y1 < y2 + height2 and y1 + height1 > y2
+    --[[
+    local AisToTheRightOfB = playerX > platX + platWidth;
+    local AisToTheLeftOfB = playerX + playerWidth < platX;
+    local AisAboveB = playerY + playerHeight < platY;
+    local AisBelowB = playerY > platY + platHeight;
+    ]]
 
-    -- Si une collision est détectée
-    if x_collision and y_collision then
-        iscolliding = true
-        
+    local object1NextFrame = Player:new(object1.x, object1.y)
+    local object2NextFrame = Platform:new(object2.x, object2.y)
+    object1NextFrame.width = object1.width
+    object1NextFrame.height = object1.height
+    object2NextFrame.width = object2.width
+    object2NextFrame.height = object2.height
+    
+    object1NextFrame.speedY = object1.speedY
+    object1NextFrame.speedX = object1.speedX
+   
+    object1NextFrame:Move(dt)
 
-        -- Si object1 est en dessous de object2
-        if y1 > y2 then
-            print("lkjhlkjhlkjhgfd")
-            -- Vérifier que les fonctions existent avant de les appeler
-            if type(object1.SetDirection) == "function" then 
-                print("ta tante")
-                object1:SetDirection(object2.x, object2.y + height2) -- Exemple : Réinitialiser la direction
-            elseif type(object1.GoToDirection) == "function" then
-                print("ton onle")
-                object1:GoToDirection(0, 0, 0) -- Exemple : Arrêter object1
-            end
-        end
+    local CollidenextFrameRight = (object1NextFrame.x + object1NextFrame.width > object2NextFrame.x)
+    local CollidenextFrameLeft = (object1NextFrame.x < object2NextFrame.x + object2NextFrame.width)
+    local CollidenextFrameAbove = (object1NextFrame.y < object2NextFrame.y + object2NextFrame.height)
+    local CollidenextFrameBelow = (object1NextFrame.y + object1NextFrame.height > object2NextFrame.y)
 
-        -- Résolution de la collision sur l'axe Y
-        if y1 + height1 > y2 and y1 < y2 then
-            object1.y = y2 - height1 -- Placer au-dessus
-        elseif y1 < y2 + height2 and y1 + height1 > y2 + height2 then
-            object1.y = y2 + height2 -- Placer en dessous
-        end
-
-        -- Résolution de la collision sur l'axe X
-        if x1 + width1 > x2 and x1 < x2 then
-            object1.x = x2 - width1 -- Placer à gauche
-        elseif x1 < x2 + width2 and x1 + width1 > x2 + width2 then
-            object1.x = x2 + width2 -- Placer à droite
-        end
+    if CollidenextFrameAbove and not CollidenextFrameRight or CollidenextFrameLeft then
+        print("test")
+        object1.y = playerY
+        object1.onGround = true
+    elseif CollidenextFrameBelow and not CollidenextFrameRight or CollidenextFrameLeft then
+        print("test2")
+        object1.y = playerY + platHeight
+        object1.onGround = false
     end
 
+    if CollidenextFrameRight and not CollidenextFrameAbove and not CollidenextFrameBelow then
+        print("test3")
+        object1.x = playerX
+    elseif CollidenextFrameLeft and not CollidenextFrameAbove and not CollidenextFrameBelow then
+        print("test4")
+        object1.x = playerX + playerWidth
+    end
+
+    if object1.onGround then
+        object1.speedY = 0
+    end
+    --[[
+    -- Si une collision est détectée frame d'après
+    if not (CollidenextFrameRight or CollidenextFrameLeft or CollidenextFrameAbove or CollidenextFrameBelow) then
+        -- Résolution de la collision sur l'axe Y
+        if AisAboveB then
+            print("on est la")
+            if not AisToTheLeftOfB and not AisToTheRightOfB then
+                print("dessus")
+                object1.y = platY - playerHeight
+                object1.onGround = true
+            else
+                print("yahoo")
+                object1.onGround = false
+            end
+            -- Placer au-dessus
+        elseif AisBelowB then
+            object1.y = platY + platHeight 
+            -- Placer en dessousd
+        -- Résolution de la collision sur l'axe X
+        elseif AisToTheLeftOfB then
+            print("gauche")
+            object1.x = platX - playerWidth -- Placer à gauche
+        elseif AisToTheRightOfB then
+            print("droite")
+            object1.x = platX + platWidth -- Placer à droite
+        end
+    elseif CollidenextFrameAbove then
+        print("ici")
+        object1.onGround = true
+    elseif not CollidenextFrameBelow then
+        print("feur")
+         object1.onGround = false
+    end
+]]
     return iscolliding
 end
-
-
--- function IsSpritesColliding(sprite1, sprite2)
---     -- Récupérer les rectangles englobants des deux sprites
---     local rect1 = { x = sprite1.x, y = sprite1.y, width = sprite1:getWidth(), height = sprite1:getHeight() }
---     local rect2 = { x = sprite2.x, y = sprite2.y, width = sprite2:getWidth(), height = sprite2:getHeight() }
-
---     -- Vérification du chevauchement sur l'axe X et Y
---     local xOverlap = rect1.x + rect1.width > rect2.x and rect1.x < rect2.x + rect2.width
---     local yOverlap = rect1.y + rect1.height > rect2.y and rect1.y < rect2.y + rect2.height
-
---     -- Si les sprites se chevauchent, traiter la collision
---     if xOverlap and yOverlap then
---         -- Trouver l'axe de chevauchement le plus important (X ou Y)
---         local overlapX = math.min(rect1.x + rect1.width - rect2.x, rect2.x + rect2.width - rect1.x)
---         local overlapY = math.min(rect1.y + rect1.height - rect2.y, rect2.y + rect2.height - rect1.y)
-
---         -- Déplacer le sprite 1 pour le séparer selon l'axe de chevauchement le plus petit
---         if overlapX < overlapY then
---             if rect1.x < rect2.x then
---                 sprite1.x = sprite1.x - overlapX -- Déplace sprite1 à gauche
---             else
---                 sprite1.x = sprite1.x + overlapX -- Déplace sprite1 à droite
---             end
---         else
---             if rect1.y < rect2.y then
---                 sprite1.y = sprite1.y - overlapY -- Déplace sprite1 vers le haut
---             else
---                 sprite1.y = sprite1.y + overlapY -- Déplace sprite1 vers le bas
---             end
---         end
-
---         return true -- Collision détectée et résolution effectuée
---     end
-
---     return false -- Pas de collision
--- end
-
-
-
-
-
-
-
-
-
-
-
 
 return Physics
 

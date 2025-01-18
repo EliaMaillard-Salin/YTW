@@ -7,10 +7,10 @@ function PlayerFeeling:Create()
         allFeelings = {
             Neutral = {
                     Enter = function()
-                        print("Neutral")
+                        --print("Neutral")
                     end,
                     Update = function()
-                        print("Neutral Update")
+                        --("Neutral Update")
                     end,
                     Exit = function()
                         print("Neutral Exit")

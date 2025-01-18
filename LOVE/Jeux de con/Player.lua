@@ -6,10 +6,11 @@ function Player:new(x, y)
     local obj = {
         x = x,
         y = y,
-        dirX = 0, 
-        dirY = 0,
         speedX = 150,  
-        speedY = 0,    
+        speedY = 1,    
+        maxSpeedY = 100,
+        dirX = 0,
+        dirY = 0,
         jumpPower = -300,  
         gravity = 800,
         sprite = nil,
@@ -28,7 +29,6 @@ function Player:new(x, y)
         timer = 0, 
         hasDashedInAir = false,
         mSpeed = 0,  
-        mDirection = {x = 0, y = 0},
         feeling = PlayerFeeling:Create(),
         feelingCount = 0,
         changingState = false
@@ -47,9 +47,14 @@ end
 
 function Player:update(dt)
     --self.feeling.Update()
-
-    self.speedY = self.speedY + self.gravity * dt
-
+    self.dirX = 0
+    self.dirY = 0
+    
+    if not self.onGround then 
+        self.speedY = self.speedY + self.gravity * dt
+    else
+        self.speedY = self.gravity * dt
+    end
     -- Gérer le cooldown du dash
     if self.dashCooldownTimer > 0 then
         self.dashCooldownTimer = self.dashCooldownTimer - dt
@@ -202,8 +207,8 @@ function Player:SetDirection(x, y, speed)
         self.mSpeed = speed
     end
 
-    self.mDirection.x = x
-    self.mDirection.y = y
+    self.dirX = x
+    self.dirY = y
 end
 
 function Player:GoToDirection(x, y, speed)
@@ -212,17 +217,16 @@ function Player:GoToDirection(x, y, speed)
     end
 
     local position = self:GetPosition()
-    local direction = {
-        x = x - position.x,
-        y = y - position.y
-    }
+    local X = x - position.x
+    local Y = y - position.y
 
-    local success = Normalize(direction)
+    local success = Normalize(X,Y)
     if not success then
         return false
     end
 
-    self.mDirection = direction
+    self.dirX = X
+    self.dirY = Y
     return true
 end
 
@@ -233,18 +237,24 @@ function Player:GetPosition(offsetX, offsetY)
     }
 end
 
-function Normalize(vector)
-    local magnitude = math.sqrt(vector.x^2 + vector.y^2)
+function Normalize(x, y)
+    local magnitude = math.sqrt(x^2 + y^2)
     if magnitude == 0 then
         return false -- Impossible de normaliser un vecteur nul
     end
-    vector.x = vector.x / magnitude
-    vector.y = vector.y / magnitude
+    x = x / magnitude
+    y = y / magnitude
     return true
 end
-function  Player:Move(dt)
+
+function Player:Move(dt)
     self.x = self.x + (self.dirX * self.speedX * dt)
-    self.y = self.y +  ( self.speedY * dt )
+    if not (self.onGround == true and self.speedY > 0) then
+        self.y = self.y +  ( self.speedY * dt )
+        if self.speedY > self.maxSpeedY then
+            self.speedY = self.maxSpeedY
+        end
+    end
 end
 
 return Player
