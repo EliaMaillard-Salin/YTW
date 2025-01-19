@@ -23,15 +23,35 @@ function Parallax:Create(width, height)
     self.BackGrounds32 = BackGround:Create(400,width, height)
     self.BackGrounds42 = BackGround:Create(500, width, height)
 
-    self.BackGrounds1:init(love.graphics.newImage("BG1Neutral.png"),love.graphics.newImage("BG1sad.png"),love.graphics.newImage("BG1anger.png"),love.graphics.newImage("BG1Joy.png"))
-    self.BackGrounds2:init(love.graphics.newImage("BG2Neutral.png"),love.graphics.newImage("BG2sad.png"),love.graphics.newImage("BG2anger.png"),love.graphics.newImage("BG2Joy.png"))
-    self.BackGrounds3:init(love.graphics.newImage("BG3Neutral.png"),love.graphics.newImage("BG3sad.png"),love.graphics.newImage("BG3anger.png"),love.graphics.newImage("BG3Joy.png"))
-    self.BackGrounds4:init(love.graphics.newImage("BG4Neutral.png"),love.graphics.newImage("BG4sad.png"),love.graphics.newImage("BG4anger.png"),love.graphics.newImage("BG4Joy.png"))
+    local imgBG1Neutral = love.graphics.newImage("BG1Neutral.png")
+    local imgBG1Sad = love.graphics.newImage("BG1sad.png")
+    local imgBG1Anger = love.graphics.newImage("BG1anger.png")
+    local imgBG1Joy = love.graphics.newImage("BG1Joy.png")
 
-    self.BackGrounds12:init(love.graphics.newImage("BG1Neutral.png"),love.graphics.newImage("BG1sad.png"),love.graphics.newImage("BG1anger.png"),love.graphics.newImage("BG1Joy.png"))
-    self.BackGrounds22:init(love.graphics.newImage("BG2Neutral.png"),love.graphics.newImage("BG2sad.png"),love.graphics.newImage("BG2anger.png"),love.graphics.newImage("BG2Joy.png"))
-    self.BackGrounds32:init(love.graphics.newImage("BG3Neutral.png"),love.graphics.newImage("BG3sad.png"),love.graphics.newImage("BG3anger.png"),love.graphics.newImage("BG3Joy.png"))
-    self.BackGrounds42:init(love.graphics.newImage("BG4Neutral.png"),love.graphics.newImage("BG4sad.png"),love.graphics.newImage("BG4anger.png"),love.graphics.newImage("BG4Joy.png"))
+    local imgBG2Neutral = love.graphics.newImage("BG2Neutral.png")
+    local imgBG2Sad = love.graphics.newImage("BG2sad.png")
+    local imgBG2Anger = love.graphics.newImage("BG2anger.png")
+    local imgBG2Joy = love.graphics.newImage("BG2Joy.png")
+
+    local imgBG3Neutral = love.graphics.newImage("BG3Neutral.png")
+    local imgBG3Sad = love.graphics.newImage("BG3sad.png")
+    local imgBG3Anger = love.graphics.newImage("BG3anger.png")
+    local imgBG3Joy = love.graphics.newImage("BG3Joy.png")
+
+    local imgBG4Neutral = love.graphics.newImage("BG4Neutral.png")
+    local imgBG4Sad = love.graphics.newImage("BG4sad.png")
+    local imgBG4Anger = love.graphics.newImage("BG4anger.png")
+    local imgBG4Joy = love.graphics.newImage("BG4Joy.png")
+
+    self.BackGrounds1:init(imgBG1Neutral,imgBG1Sad,imgBG1Anger,imgBG1Joy)
+    self.BackGrounds2:init(imgBG2Neutral,imgBG2Sad,imgBG2Anger,imgBG2Joy)
+    self.BackGrounds3:init(imgBG3Neutral,imgBG3Sad,imgBG3Anger,imgBG3Joy)
+    self.BackGrounds4:init(imgBG4Neutral,imgBG4Sad,imgBG4Anger,imgBG4Joy)
+
+    self.BackGrounds12:init(imgBG1Neutral,imgBG1Sad,imgBG1Anger,imgBG1Joy)
+    self.BackGrounds22:init(imgBG2Neutral,imgBG2Sad,imgBG2Anger,imgBG2Joy)
+    self.BackGrounds32:init(imgBG3Neutral,imgBG3Sad,imgBG3Anger,imgBG3Joy)
+    self.BackGrounds42:init(imgBG4Neutral,imgBG4Sad,imgBG4Anger,imgBG4Joy)
 
     self.BackGrounds12.posX = self.BackGrounds1.posX + self.BackGrounds1.width - 10
     self.BackGrounds22.posX = self.BackGrounds2.posX + self.BackGrounds2.width - 10

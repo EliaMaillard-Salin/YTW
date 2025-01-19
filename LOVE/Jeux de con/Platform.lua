@@ -13,7 +13,8 @@ function Platform:new(x, y, width, height)
 end
 
 function Platform:draw()
-    love.graphics.setColor(0.5, 0.5, 0.5)  -- Couleur grise pour la plateforme
+    love.graphics.setColor(1, 0, 0)
+    print(self.x,self.y,self.width,self.height)
     love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
 end
 

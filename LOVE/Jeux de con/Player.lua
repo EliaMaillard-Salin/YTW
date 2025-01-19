@@ -21,8 +21,8 @@ function Player:New(x, y)
         jumpPower = -500,  
         gravity = 800,
         sprite = nil,
-        width = 50,   
-        height = 50,  
+        width = 32*3,   
+        height = 32*3,  
         onGround = false,  
         speedDistance = 200,
         dashCount = 0,
@@ -39,12 +39,16 @@ function Player:New(x, y)
         currentState = STATES.IDLE,
         feeling = nil,
         currentFeeling = 0,
-        changingState = false
+        changingState = false,
+        sprites = {nil,nil,nil,nil}
     }
     setmetatable(obj, self)
     self.__index = self  
     obj.feeling = PlayerFeeling:Create()
-    
+    obj.sprites[0] = love.graphics.newImage("player/Neutralfacing.png")
+    obj.sprites[1] = love.graphics.newImage("player/sadFacing.png")
+    obj.sprites[2] = love.graphics.newImage("player/angryfacing.png")
+    obj.sprites[3] = love.graphics.newImage("player/joyfacing.png")
     print("Player created with state: " .. tostring(obj.state))  -- Debugging statement
     return obj
 end
@@ -70,7 +74,7 @@ function Player:Update(dt, platform)
     self.dirY = 0
     self.speedY = self.speedY + self.gravity * dt
     
-    self:CheckCollisionWithPlatform(platform)
+    --self:CheckCollisionWithPlatform(platform)
     
     if self.dashCooldownTimer > 0 then
         self.dashCooldownTimer = self.dashCooldownTimer - dt
@@ -78,7 +82,7 @@ function Player:Update(dt, platform)
     
     self.feeling:Update(self, dt)
     
-    self:handleMovement(dt)
+    self:HandleMovement(dt)
     self:Move(dt)
     
     
@@ -114,6 +118,10 @@ function Player:Draw()
     else
         love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
     end
+    love.graphics.setColor(255, 255, 255)
+    love.graphics.scale(3, 3)
+    love.graphics.draw(self.sprites[self.currentFeeling], self.x/3,self.y /3)
+    love.graphics.scale(1, 1)
 end
 
 function Player:HandleMovement(dt)
@@ -134,18 +142,22 @@ function Player:HandleMovement(dt)
     if love.keyboard.isDown('u') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Neutral)
         self.currentFeeling = 0
+        self.changingState = true
     end
     if love.keyboard.isDown('i') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Sadness)
         self.currentFeeling = 1
+        self.changingState = true
     end
     if love.keyboard.isDown('o') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Anger)
         self.currentFeeling = 2
+        self.changingState = true
     end
     if love.keyboard.isDown('p') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Joy)
         self.currentFeeling = 3
+        self.changingState = true
     end
 
     if love.keyboard.isDown('lshift') and self.dashCooldownTimer <= 0 and buttonPressed < 1 then
