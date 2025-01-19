@@ -25,7 +25,7 @@ function Player:New(x, y)
         width = 32*3,   
         height = 32*3,  
         onGround = false,  
-        speedDistance = 200,
+        speedDistance = 800,
         dashCount = 0,
         maxDash = 1,
         dashTimer = 0,
@@ -34,15 +34,18 @@ function Player:New(x, y)
         dashStartX = 0,
         dashStartY = 0,
         dashDirection = " ",
+        dashDirectionX = 0,
+        dashDirectionY = 0,
         hasDashedInAir = false,
         feeling = PlayerFeeling:Create(),
         states = PlayerStates,
         currentState = STATES.IDLE,
         currentFeeling = 0,
-        isColliding = false,
+        isStomping = false,
         nextX = 0,
-        nextY = 50,
-        sprites = {nil,nil,nil,nil}
+        sprites = {nil,nil,nil,nil},
+        nextY = 0,
+        keyStates = {}
     }
     setmetatable(obj, self)
     self.__index = self  
@@ -53,6 +56,25 @@ function Player:New(x, y)
     obj.sprites[2] = love.graphics.newImage("player/angryfacing.png")
     obj.sprites[3] = love.graphics.newImage("player/joyfacing.png")
     return obj
+end
+
+function Player:isKeyPressed(key)
+    -- Vérifie si la touche n'est pas encore enfoncée et n'est pas actuellement enfoncée
+    if love.keyboard.isDown(key) and not self.keyStates[key] then
+        -- Marque la touche comme enfoncée
+        self.keyStates[key] = true
+        return true
+    end
+    return false
+end
+
+function Player:resetKeyPresses()
+    -- Réinitialise l'état des touches après chaque mise à jour
+    for key, _ in pairs(self.keyStates) do
+        if not love.keyboard.isDown(key) then
+            self.keyStates[key] = false
+        end
+    end
 end
 
 function Player:Load()
@@ -69,11 +91,12 @@ end
 function Player:Update(dt)
 
     self.speedY = self.speedY + self.gravity * dt
+
+    if self.isStomping then
+        print(self.speedY)
+    end
     self.feeling:Update(self, dt)
 
-    if self.speedY > self.maxSpeedY then
-        self.speedY = self.maxSpeedY
-    end
     -- Gérer le cooldown du dash
     if self.dashCooldownTimer > 0 then
         self.dashCooldownTimer = self.dashCooldownTimer - dt
@@ -89,9 +112,9 @@ function Player:Update(dt)
 end
 
 function Player:handleMovement(dt)
-    
     local buttonPressed = 0
-
+    
+    -- Gestion des sentiments
     if love.keyboard.isDown('u') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Neutral)
         self.currentFeeling = 0
@@ -113,19 +136,40 @@ function Player:handleMovement(dt)
         self.changingState = true
     end
 
-        -- Vérifier si le joueur veut planer pendant la chute (par exemple avec la touche "space")
-        if self.currentFeeling == 1 then
-            if self.currentState == STATES.FALLING then
-                if love.keyboard.isDown("space") then  -- Si "space" est pressé
-                    -- Appliquer l'effet de planage en réduisant la vitesse verticale
-                    self.speedY = self.speedY * 0.85  -- Par exemple, réduire la vitesse de 2% à chaque frame
-                end
+    if self.feelingCount == 1 and self.currentState == "falling" then
+        if love.keyboard.isDown("space") then
+            print("Planing in fall...")
+            -- Appliquer l'effet de planage
+            self.speedY = self.speedY * 0.10 * dt -- Réduire la vitesse verticale
+        end
+    end
+    
+    --FAIT LE STOMP ICI 
+    if self.feelingCount == 2 and self.currentState == "falling" then
+        if self:isKeyPressed("s") then
+            self.isStomping = true
+            print("Stomp activé !")
+            
+            -- Appliquer un boost vertical fort pour simuler un stomp
+            if self.speedY < 0 then  -- Si le joueur descend (chute)
+                self.speedY = self.speedY * 5.25  -- Inverser et augmenter la vitesse
+            else
+                self.speedY = self.speedY * 5.5  -- Si déjà dans une position montante, forcer la descente
+            end
+            
+            -- Ajouter un peu d'effet de "choc" à la position (pour simuler un impact plus marqué)
+            self.y = self.y + 10 * dt  -- Simuler un petit mouvement vers le bas à l'impact
+
+            if self.onGround then
+                self.isStomping = false
             end
         end
-        
-    if love.keyboard.isDown('lshift') and self.dashCooldownTimer <= 0 and buttonPressed < 1 then
+    end
+
+    -- Gérer le dash
+    if self:isKeyPressed('lshift') and self.dashCooldownTimer <= 0 and buttonPressed < 1 then
+        -- Déterminer la direction du dash
         if self.onGround or (not self.onGround and not self.hasDashedInAir) then
-            buttonPressed = buttonPressed + 1
             if love.keyboard.isDown('d') and love.keyboard.isDown('z') then
                 self.dashDirection = "right_up"
             elseif love.keyboard.isDown('q') and love.keyboard.isDown('z') then
@@ -142,7 +186,7 @@ function Player:handleMovement(dt)
                 self.dashDirection = "up"
             end
 
-            -- Initialisation du dash
+            -- Initialiser le dash
             self.dashTimer = 0.2
             self.dashCount = self.dashCount + 1
             buttonPressed = 0
@@ -154,12 +198,15 @@ function Player:handleMovement(dt)
         end
     end
 
-    -- Réinitialiser les dashs si au sol
+    -- Réinitialiser les dashs si le joueur est au sol
     if self.onGround then
         buttonPressed = 0
         self.hasDashedInAir = false
         self.dashCount = 0
     end
+
+    self:resetKeyPresses()
+
 end
 
 function Player:SetPosition(x, y)
