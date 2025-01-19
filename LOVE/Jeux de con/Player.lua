@@ -44,6 +44,9 @@ function Player:load()
 end
 
 function Player:update(dt)
+    
+    self.dirX = 0
+    self.dirY = 0
     --self.feeling.Update()
 
     self.speedY = self.speedY + self.gravity * dt
@@ -71,6 +74,8 @@ function Player:draw()
     else
         love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
     end
+
+    love.graphics.setColor(255, 255, 255)
 end
 
 function Player:handleMovement(dt)

@@ -16,7 +16,8 @@ function Camera:Create()
         rotation = 0,
         offsetX = 0,
         offsetY = 0,
-        onPause = false
+        onPause = false,
+        stateCount = 0
     }
     setmetatable(cam, Camera)
     self.__index = self
@@ -64,11 +65,12 @@ end
 
 function World:Update(dt, player)
 
-    if self.onPause == false then
+    if self.onPause == nil then
         print("go")
         player:update(dt)
         if player.changingState then 
-            self.current = self.allStates[player.feelingCount]
+            self.stateCount = player.feelingCount
+            self.parallax:ChangeState(self.stateCount)
             player.changingState = false
         end
         --local offsetY = player.y - self.camera.y
@@ -78,6 +80,7 @@ function World:Update(dt, player)
     end
 
     if love.keyboard.isDown("escape") then
+        print("a")
         if self.onPause then
         
         else
