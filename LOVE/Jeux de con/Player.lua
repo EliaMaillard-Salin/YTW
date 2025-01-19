@@ -1,4 +1,4 @@
-Slocal PlayerStates = require("PlayerStates")
+local PlayerStates = require("PlayerStates")
 local PlayerFeeling = require("PlayerFeeling")
 
 Player = {}
@@ -19,7 +19,7 @@ function Player:New(x, y)
         maxSpeedY = 300,
         dirX = 0,
         dirY = 0,
-        jumpPower = -850,  
+        jumpPower = -550,  
         gravity = 800,
         sprite = nil,
         width = 32*3,   

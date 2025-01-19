@@ -1,13 +1,8 @@
-local Player = require "Player"
-local Platform = require "Platform"
 local bump = require "bump"
 
 -- Crée un monde avec une taille de cellule de 50
 local worldCollider = bump.newWorld(50)
 love.window.setMode(1920, 1080)
-
-local player = nil
-local platforms = {}
 
 local world = require ("World")
 local Player = require ("Player")
@@ -15,7 +10,6 @@ local Platform = require ("Platform")
 
 local player
 local platform
-
 
 function love.load()
 
