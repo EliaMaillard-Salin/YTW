@@ -61,15 +61,15 @@ function Parallax:Create(width, height)
     return parallax
 end
 
-function Parallax:Update(dt,offsetX)
-    self.BackGrounds1:Update(dt,offsetX)
-    self.BackGrounds12:Update(dt,offsetX)
-    self.BackGrounds2:Update(dt,offsetX)
-    self.BackGrounds22:Update(dt,offsetX)
-    self.BackGrounds3:Update(dt,offsetX)
-    self.BackGrounds32:Update(dt,offsetX)
-    self.BackGrounds4:Update(dt,offsetX)
-    self.BackGrounds42:Update(dt,offsetX)
+function Parallax:Update(dt,offsetX,camera)
+    self.BackGrounds1:Update(dt,offsetX,camera)
+    self.BackGrounds12:Update(dt,offsetX,camera)
+    self.BackGrounds2:Update(dt,offsetX,camera)
+    self.BackGrounds22:Update(dt,offsetX,camera)
+    self.BackGrounds3:Update(dt,offsetX,camera)
+    self.BackGrounds32:Update(dt,offsetX,camera)
+    self.BackGrounds4:Update(dt,offsetX,camera)
+    self.BackGrounds42:Update(dt,offsetX,camera)
 end
 
 function Parallax:Draw()
@@ -118,15 +118,15 @@ function BackGround:init(sprite1, sprite2,sprite3,sprite4)
     self.sprites[3] =  sprite4
 end
 
-function BackGround:Update(dt,offsetX)
+function BackGround:Update(dt,offsetX,camera)
     self.posX = self.posX - ( offsetX * self.speed * dt)
-    if self.posX + self.width <= 0 then 
-        self.posX = self.width -10
-    elseif self.posX >= self.width then
-        self.posX = -self.width +10
+    if self.posX + self.width <= camera.x then 
+        self.posX = camera.x + self.width - 30
+    elseif self.posX >= camera.x + self.width then
+        self.posX = camera.x - self.width + 30
     end
 end
 
 function BackGround:Draw()
-    love.graphics.draw(self.sprites[self.stateCount],self.posX,self.posY)
+    love.graphics.draw(self.sprites[self.stateCount],(self.posX - 1920/2)/6,self.posY/6)
 end

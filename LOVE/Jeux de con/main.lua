@@ -29,28 +29,15 @@ end
 
 function love.update(dt)
     -- Mettre à jour les mouvements du joueur q
-    player:Update(dt)
-
-    local actualX, actualY, cols, len = worldCollider:move(player, player.x, player.y)
-
-    player.x, player.y = actualX, actualY
-    
-    for _, col in ipairs(cols) do
-        if col.other.type == "plateform" then
-            -- Si la collision est avec le bas du joueur, le joueur est sur la plateforme
-            if player.y + player.height <= col.other.y then
-                player.onGround = true
-            end
-        end
-    end
-
+    world:Update(dt,player,worldCollider)    
     worldCollider:update(player, player.x, player.y)
-
-    world:Update(dt,player)
-
 end
 
 function love.draw()
+    
+    love.graphics.setColor(1,1,1)
+    world:Draw(player)
+    
     -- Dessiner le joueur
     if player.onGround then
         love.graphics.setColor(1, 0, 0) -- Rouge
@@ -59,7 +46,4 @@ function love.draw()
         love.graphics.setColor(1, 0, 0) -- Rouge
         love.graphics.print("Not on Ground", player.x, player.y - 20)
     end
-
-    love.graphics.setColor(1,1,1)
-    world:Draw(player)
 end

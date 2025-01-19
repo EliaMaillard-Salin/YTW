@@ -19,7 +19,7 @@ function Player:New(x, y)
         maxSpeedY = 300,
         dirX = 0,
         dirY = 0,
-        jumpPower = -300,  
+        jumpPower = -850,  
         gravity = 800,
         sprite = nil,
         width = 32*3,   
@@ -95,6 +95,7 @@ function Player:Update(dt)
     if self.isStomping then
         print(self.speedY)
     end
+
     self.feeling:Update(self, dt)
 
     -- Gérer le cooldown du dash
@@ -136,7 +137,7 @@ function Player:handleMovement(dt)
         self.changingState = true
     end
 
-    if self.feelingCount == 1 and self.currentState == "falling" then
+    if self.currentFeeling == 1 and self.currentState == "falling" then
         if love.keyboard.isDown("space") then
             print("Planing in fall...")
             -- Appliquer l'effet de planage
@@ -145,7 +146,7 @@ function Player:handleMovement(dt)
     end
     
     --FAIT LE STOMP ICI 
-    if self.feelingCount == 2 and self.currentState == "falling" then
+    if self.currentFeeling == 2 and self.currentState == "falling" then
         if self:isKeyPressed("s") then
             self.isStomping = true
             print("Stomp activé !")
@@ -267,17 +268,17 @@ end
 
 function Player:Draw()
 
-    if (self.dashCooldownTimer <= 0 and self.dashCount < self.maxDash) then
-        love.graphics.setColor(255, 0, 0)
-    else
-        love.graphics.setColor(255, 255, 255)
-    end
+    -- if (self.dashCooldownTimer <= 0 and self.dashCount < self.maxDash) then
+    --     love.graphics.setColor(255, 0, 0)
+    -- else
+    --     love.graphics.setColor(255, 255, 255)
+    -- end
 
-    if self.sprite then
-        love.graphics.draw(self.sprite, self.x, self.y)
-    else
-        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
-    end
+    -- if self.sprite then
+    --     love.graphics.draw(self.sprite, self.x, self.y)
+    -- else
+    --     love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+    -- end
     love.graphics.setColor(255, 255, 255)
     love.graphics.push("all")
     love.graphics.scale(3, 3)
