@@ -20,7 +20,8 @@ function Player:New(x, y)
         dirX = 0,
         dirY = 0,
         jumpPower = -300,  
-        jumpCount = 2,
+        jumpCount = 1,
+        maxJump = 2,
         gravity = 800,
         sprite = nil,
         width = 50,   
@@ -62,7 +63,7 @@ function Player:Load()
 end
 
 function Player:Update(dt)
-
+    print(self.jumpCount)
     self.speedY = self.speedY + self.gravity * dt
     self.feeling:Update(self, dt)
 
