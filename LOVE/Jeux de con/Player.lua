@@ -80,6 +80,9 @@ function Player:Update(dt)
     if self.states[self.currentState].Update then
         self.states[self.currentState].Update(self, dt)
     end
+
+    
+
 end
 
 function Player:handleMovement(dt)

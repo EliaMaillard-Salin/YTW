@@ -35,14 +35,6 @@ function isColliding(a,b)
 
 function Physics.Collision(object1, platforms ,dt)
     for _, object2 in ipairs(platforms) do
-
-        if object2.isBroken then
-            -- Vérifier si la plateforme est brisée et si le joueur est en état angry
-            if isColliding(object1, object2) and object1.currentState == "angry" then
-                -- Supprimer la plateforme brisée
-                table.remove(platforms, _)
-            end
-        end
         -- Obtenir les positions et dimensions des objets
         local playerX, playerY, playerWidth, playerHeight = object1.x, object1.y, object1.width, object1.height
         local platX, platY, platWidth, platHeight = object2.x, object2.y, object2.width, object2.height

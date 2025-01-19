@@ -7,7 +7,7 @@ function BrokenPlatform:new(x, y, width, height)
         width = width or 200,  -- Largeur par défaut de la plateforme
         height = height or 20,  -- Hauteur par défaut
         type = "",
-        isBroken = true
+        isBroken = false
     }
     setmetatable(obj, self)
     self.__index = self

@@ -2,6 +2,7 @@ local Player = require "Player"
 local Platform = require "Platform"
 local BrokenPlatform = require "BrokenPlatform"
 local bump = require "bump"
+local PlayerFeeling = require("PlayerFeeling")
 
 -- Crée un monde avec une taille de cellule de 50
 local world = bump.newWorld(50)
@@ -63,16 +64,8 @@ function love.update(dt)
             end
         end
     end
-
-        if broke.isBroken then
-            -- Vérifier si la plateforme est brisée et si le joueur est en état angry
-            if Collision(player, broke) and player.feelingCount == 2 then
-                -- Supprimer la plateforme brisée
-                table.remove(broke, _)
-            end
-        end
-
     world:update(player, player.x, player.y)
+
 
 end
 
