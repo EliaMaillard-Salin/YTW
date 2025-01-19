@@ -21,25 +21,29 @@ local function handleMovement(player, dt)
     -- Calculer les nouvelles positions pour les axes X et Y
     player.x = player.x + player.speedX * player.dirX * dt
     player.y = player.y + (player.speedY * dt)
-
 end
 
+-- État IDLE
 PlayerStates.idle = {
     Enter = function(player)
         print("Entrée dans l'état 'idle'")
-        end,
+        if player.feelingCount == 3  and player.onGround == true then
+            player.jumpCount = 2
+        else 
+            player.jumpCount = 0
+        end
+    end,
     Update = function(player, dt)
-        -- Change Sprite
         player.speedY = player.speedY + (player.gravity * dt)
 
         handleMovement(player, dt)
 
-        if player.onGround == false then
-            player:ChangeState("falling")
+        if not player.onGround then
+            player:ChangeState(STATES.FALLING)
         elseif love.keyboard.isDown("d") or love.keyboard.isDown("q") then
-            player:ChangeState("moving")
-        elseif love.keyboard.isDown("space") and player.onGround then
-            player:ChangeState("jumping") 
+            player:ChangeState(STATES.MOVING)
+        elseif love.keyboard.isDown("space") and (player.onGround or player.jumpCount > 0) then
+            player:ChangeState(STATES.JUMPING)
         end
     end,
     Exit = function(player)
@@ -47,6 +51,7 @@ PlayerStates.idle = {
     end
 }
 
+-- État MOVING
 PlayerStates.moving = {
     Enter = function(player)
         print("Entrée dans l'état 'moving'")
@@ -60,29 +65,32 @@ PlayerStates.moving = {
 
         if not player.onGround then
             player:ChangeState(STATES.FALLING)
-        elseif player.dirX == 0 then  -- Si aucune touche de direction n'est pressée
+        elseif player.dirX == 0 then
             player:ChangeState(STATES.IDLE)
-        end
-
-        -- Si le joueur est sur le sol et appuie sur 'space', il saute
-        if love.keyboard.isDown("space") and player.onGround then
+        elseif love.keyboard.isDown("space") and (player.onGround or player.jumpCount > 0) then
             player:ChangeState(STATES.JUMPING)
         end
     end,
     Exit = function(player)
         print("Sortie de l'état 'moving'")
-        player.dirX = 0 -- Réinitialiser la direction
     end
 }
 
-
+-- État JUMPING
 PlayerStates.jumping = {
     Enter = function(player)
         print("Entrée dans l'état 'jumping'")
         player.onGround = false
         player.speedY = player.jumpPower
-        print('speedY1', player.speedY)
-        player.dirY = -1
+        player.jumpCount = player.jumpCount - 1 -- Consommer un saut
+        if player.jumpCount <= 0 then 
+            player.jumpCount = 0
+        end
+        if player.feelingCount ~= 3 then
+            player.jumpCount = 0
+        end
+
+        print("Saut restant :", player.jumpCount)
     end,
     Update = function(player, dt)
         -- Mettre à jour la vitesse Y pour la gravité
@@ -92,42 +100,37 @@ PlayerStates.jumping = {
         -- Appeler handleMovement pour gérer les déplacements horizontaux et verticaux
         handleMovement(player, dt)
 
-        if(player.speedY > 0) then
+        if player.speedY > 0 then
             player:ChangeState(STATES.FALLING)
-            end
-
+        end
     end,
     Exit = function(player)
         print("Sortie de l'état 'jumping'")
     end
 }
 
-
+-- État FALLING
 PlayerStates.falling = {
     Enter = function(player)
         print("Entrée dans l'état 'falling'")
-        player.dirY = 1
-        player.speedY = 0
+        player.onGround = false
     end,
     Update = function(player, dt)
-        -- Transition vers 'idle' si au sol
-        if not player.isStomping then
-            player.speedY = player.speedY + (player.gravity * dt)
-        end
-
-        if player.onGround then
-            player:ChangeState("idle")
-        end
-
+        player.speedY = player.speedY + (player.gravity * dt)
         handleMovement(player, dt)
 
-
+        if player.onGround then
+            player:ChangeState(STATES.IDLE)
+        elseif love.keyboard.isDown("space") and player.jumpCount > 0 then
+            player:ChangeState(STATES.JUMPING)
+        end
     end,
     Exit = function(player)
         print("Sortie de l'état 'falling'")
     end
 }
 
+-- État DASHING (inchangé dans cet exemple)
 PlayerStates.dashing = {
     Enter = function(player)
         print("Entrée dans l'état 'dashing'")

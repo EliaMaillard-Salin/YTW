@@ -48,14 +48,14 @@ function PlayerFeeling:Create()
             {
                 Enter = function(player)
                     print("Joy")
-                    player.maxDash = 2
+                    player.jumpCount = player.maxJump
                 end,
                 Update = function(player, dt)
                     print("Joy Update")
                 end,
                 Exit = function(player)
                     print("Joy Exit")
-                    player.maxDash = 1
+                    player.jumpCount = 1
                 end
             }
         },

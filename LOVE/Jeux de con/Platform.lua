@@ -13,10 +13,13 @@ function Platform:new(x, y, width, height)
     return obj
 end
 
+
 function Platform:draw()
     love.graphics.setColor(1, 0, 0)
     love.graphics.rectangle("fill",self.x,self.y,self.width,self.height)
     love.graphics.setColor(1,1,1)
 end
+
+
 
 return Platform

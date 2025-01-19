@@ -20,6 +20,8 @@ function Player:New(x, y)
         dirX = 0,
         dirY = 0,
         jumpPower = -550,  
+        jumpCount = 1,
+        maxJump = 2,
         gravity = 800,
         sprite = nil,
         width = 32*3,   
@@ -89,7 +91,7 @@ function Player:Load()
 end
 
 function Player:Update(dt)
-
+    print(self.jumpCount)
     self.speedY = self.speedY + self.gravity * dt
 
     if self.isStomping then
