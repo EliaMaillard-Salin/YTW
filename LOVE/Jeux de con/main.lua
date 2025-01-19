@@ -7,11 +7,11 @@ local world = bump.newWorld(50)
 
 local player = nil
 local platforms = {}
-
 function love.load()
     -- Créer le joueur et les plateformes
     player = Player:New(200, 150)
     player:Load()
+
 
     -- Crée une plateforme (LE SOL)
     LESOL = Platform:new(0, 450, 400, 100)

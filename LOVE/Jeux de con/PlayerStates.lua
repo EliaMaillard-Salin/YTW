@@ -82,7 +82,9 @@ PlayerStates.jumping = {
     end,
     Update = function(player, dt)
         -- Mettre à jour la vitesse Y pour la gravité
-        player.speedY = player.speedY + (player.gravity * dt)
+        if not player.isStomping then
+            player.speedY = player.speedY + (player.gravity * dt)
+        end
         -- Appeler handleMovement pour gérer les déplacements horizontaux et verticaux
         handleMovement(player, dt)
 
@@ -106,9 +108,11 @@ PlayerStates.falling = {
     end,
     Update = function(player, dt)
         -- Transition vers 'idle' si au sol
-        player.speedY = player.speedY + (player.gravity * dt)
+        if not player.isStomping then
+            player.speedY = player.speedY + (player.gravity * dt)
+        end
 
-        if player.onGround or player.speedY > 0 then
+        if player.onGround then
             player:ChangeState("idle")
         end
 
@@ -127,30 +131,55 @@ PlayerStates.dashing = {
         print("Entrée dans l'état 'dashing'")
         player.dashStartX = player.x
         player.dashStartY = player.y
-    end,
-    Update = function(player, dt)
-        local progress = (0.2 - player.dashTimer) / 0.2
+        player.dashDirectionX = 0
+        player.dashDirectionY = 0
+
         if player.dashDirection == "right" then
-            player.x = player.dashStartX + player.speedDistance * progress
+            player.dashDirectionX = 1
         elseif player.dashDirection == "left" then
-            player.x = player.dashStartX - player.speedDistance * progress
+            player.dashDirectionX = -1
         elseif player.dashDirection == "up" then
-            player.y = player.dashStartY - player.speedDistance * progress
+            player.dashDirectionY = -1
+        elseif player.dashDirection == "down" then
+            player.dashDirectionY = 1
         elseif player.dashDirection == "right_up" then
-            player.y = player.dashStartY - player.speedDistance * progress
-            player.x = player.dashStartX + player.speedDistance * progress
+            player.dashDirectionX = 1
+            player.dashDirectionY = -1
         elseif player.dashDirection == "left_up" then
-            player.y = player.dashStartY - player.speedDistance * progress
-            player.x = player.dashStartX - player.speedDistance * progress
-        elseif player.dashDirection == "left_down" then
-            player.x = player.dashStartX - player.speedDistance * progress
-            player.y = player.dashStartY + player.speedDistance * progress
+            player.dashDirectionX = -1
+            player.dashDirectionY = -1
         elseif player.dashDirection == "right_down" then
-            player.x = player.dashStartX + player.speedDistance * progress
-            player.y = player.dashStartY + player.speedDistance * progress
+            player.dashDirectionX = 1
+            player.dashDirectionY = 1
+        elseif player.dashDirection == "left_down" then
+            player.dashDirectionX = -1
+            player.dashDirectionY = 1
+        end
+        local magnitude = math.sqrt(player.dashDirectionX^2 + player.dashDirectionY^2)
+        if magnitude > 0 then
+            player.dashDirectionX = player.dashDirectionX / magnitude
+            player.dashDirectionY = player.dashDirectionY / magnitude
         end
 
+    end,
+    Update = function(player, dt)
+        local distance = player.speedDistance * dt
+
+        -- Mettre à jour les positions selon les directions
+        player.x = player.x + player.dashDirectionX * distance
+        player.y = player.y + player.dashDirectionY * distance
+
+        -- Réduire le temps du dash
         player.dashTimer = player.dashTimer - dt
+
+        -- Transitionner à un autre état après le dash
+        if player.dashTimer <= 0 then
+            if player.onGround then
+                player:ChangeState(STATES.IDLE)
+            else
+                player:ChangeState(STATES.FALLING)
+            end
+        end
 
 
         if player.dashTimer <= 0 then
@@ -159,6 +188,8 @@ PlayerStates.dashing = {
     end,
     Exit = function(player)
         print("Sortie de l'état 'dashing'")
+        player.dashDirectionX = 0
+        player.dashDirectionY = 0
     end
 }
 
