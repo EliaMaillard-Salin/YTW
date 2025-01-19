@@ -8,30 +8,22 @@ love.graphics.setDefaultFilter("nearest")
 -- Cette ligne permet de déboguer pas à pas dans ZeroBraneStudio
 if arg[#arg] == "-debug" then require("mobdebug").start() end
 
-local Player = require "Player"
-local Platform = require "Platform"
 
-local player
-local platform
+local myGame = require("game")
+local myGame = require("UX")
 
 function love.load()
-  -- Créer une plateforme au centre de l'écran
+  largeur_ecran = love.graphics.getWidth()
+  hauteur_ecran = love.graphics.getHeight()
   
-
-  player = Player:new(200, 100)
-  player:load()
-
-  platform = Platform:new(0, love.graphics.getHeight() - 50, love.graphics.getWidth(), 50)
-
+  UX.Load(largeur_ecran, hauteur_ecran)
 end
 
 function love.update(dt)
-    -- Mettre à jour le joueur avec la plateforme pour gérer la collision
-    player:update(dt, platform)
+
+  UX.Update()
 end
 
 function love.draw()
-    -- Dessiner la plateforme et le joueur
-    platform:draw()
-    player:draw()
+  UX.Draw()
 end
