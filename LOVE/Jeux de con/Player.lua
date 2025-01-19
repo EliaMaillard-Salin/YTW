@@ -114,8 +114,12 @@ function Player:HandleMovement(dt)
                 self.speedY = self.speedY * 0.85  -- Par exemple, réduire la vitesse de 2% à chaque frame
             end
         end
-        
-
+    elseif self.currentFeeling == 2 then
+        if not self.onGround then
+            if love.keyboard.isDown("s") then
+                self.speedY = self.speedY * 1.25
+            end
+        end
     end
 
     if love.keyboard.isDown('u') then 
