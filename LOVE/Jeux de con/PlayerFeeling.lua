@@ -1,19 +1,16 @@
-
 PlayerFeeling = {}
 
 
 function PlayerFeeling:Create()
     local feeling = 
     {
-        allFeelings = 
-        {
-            Neutral = 
-            {
-                    Enter = function(player)
-                        print("Neutral")
+        allFeelings = {
+            Neutral = {
+                    Enter = function()
+                        --print("Neutral")
                     end,
-                    Update = function(player, dt)
-                        print("Neutral Update")
+                    Update = function()
+                        --("Neutral Update")
                     end,
                     Exit = function(player)
                         print("Neutral Exit")

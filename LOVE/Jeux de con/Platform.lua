@@ -5,7 +5,8 @@ function Platform:new(x, y, width, height)
         x = x,
         y = y,
         width = width or 200,  -- Largeur par défaut de la plateforme
-        height = height or 20  -- Hauteur par défaut
+        height = height or 20,  -- Hauteur par défaut
+        type = ""
     }
     setmetatable(obj, self)
     self.__index = self
