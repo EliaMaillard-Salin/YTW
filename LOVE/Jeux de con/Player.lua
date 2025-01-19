@@ -20,7 +20,7 @@ function Player:New(x, y)
         dirX = 0,
         dirY = 0,
         jumpPower = -550,  
-        jumpCount = 1,
+        jumpCount = 0,
         maxJump = 2,
         gravity = 800,
         sprite = nil,
@@ -92,9 +92,9 @@ end
 
 function Player:Update(dt)
     print(self.jumpCount)
-    self.speedY = self.speedY + self.gravity * dt
-
-
+    if not self.isStomping then
+        self.speedY = self.speedY + self.gravity * dt
+    end
     self.feeling:Update(self, dt)
 
     -- Gérer le cooldown du dash
@@ -140,7 +140,7 @@ function Player:handleMovement(dt)
         if love.keyboard.isDown("space") then
             print("Planing in fall...")
             -- Appliquer l'effet de planage
-            self.speedY = self.speedY * 0.10 * dt -- Réduire la vitesse verticale
+            self.speedY = self.speedY * 0.50 * dt -- Réduire la vitesse verticale
         end
     end
     
@@ -159,10 +159,7 @@ function Player:handleMovement(dt)
             
             -- Ajouter un peu d'effet de "choc" à la position (pour simuler un impact plus marqué)
             self.y = self.y + 10 * dt  -- Simuler un petit mouvement vers le bas à l'impact
-
-            if self.onGround then
-                self.isStomping = false
-            end
+            self.isStomping = false
         end
     end
 

@@ -27,7 +27,7 @@ end
 PlayerStates.idle = {
     Enter = function(player)
         print("Entrée dans l'état 'idle'")
-        if player.feelingCount == 3  and player.onGround == true then
+        if player.currentFeeling == 3  and player.onGround == true then
             player.jumpCount = 2
         else 
             player.jumpCount = 0
@@ -87,7 +87,7 @@ PlayerStates.jumping = {
         if player.jumpCount <= 0 then 
             player.jumpCount = 0
         end
-        if player.feelingCount ~= 3 then
+        if player.currentFeeling ~= 3 then
             player.jumpCount = 0
         end
 

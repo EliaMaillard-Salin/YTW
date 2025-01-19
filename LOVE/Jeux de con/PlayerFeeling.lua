@@ -55,7 +55,7 @@ function PlayerFeeling:Create()
                 end,
                 Exit = function(player)
                     print("Joy Exit")
-                    player.jumpCount = 1
+                    player.jumpCount = 0
                 end
             }
         },

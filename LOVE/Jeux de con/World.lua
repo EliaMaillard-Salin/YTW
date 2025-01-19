@@ -79,6 +79,8 @@ function World:Update(dt,player,worldCollider)
     player:Update(dt)
     local actualX, actualY, cols, len = worldCollider:move(player, player.x, player.y)
     player.x, player.y = actualX, actualY
+
+    player.onGround = false
     for _, col in ipairs(cols) do
         if col.other.type == "plateform" then
             -- Si la collision est avec le bas du joueur, le joueur est sur la plateforme
