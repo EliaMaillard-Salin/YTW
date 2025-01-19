@@ -15,8 +15,11 @@ function Player:New(x, y)
         x = x,
         y = y,
         speedX = 150,  
-        speedY = 0,    
-        jumpPower = -500,  
+        speedY = 1,    
+        maxSpeedY = 300,
+        dirX = 0,
+        dirY = 0,
+        jumpPower = -300,  
         gravity = 800,
         sprite = nil,
         width = 50,   
@@ -31,18 +34,18 @@ function Player:New(x, y)
         dashStartX = 0,
         dashStartY = 0,
         dashDirection = " ",
-        timer = 0, 
         hasDashedInAir = false,
+        feeling = PlayerFeeling:Create(),
         states = PlayerStates,
         currentState = STATES.IDLE,
-        feeling = nil,
-        currentFeeling = 0
+        currentFeeling = 0,
+        isColliding = false,
+        nextX = 0,
+        nextY = 50,
     }
     setmetatable(obj, self)
     self.__index = self  
-    obj.feeling = PlayerFeeling:Create()
     
-    print("Player created with state: " .. tostring(obj.state))  -- Debugging statement
     return obj
 end
 
@@ -57,54 +60,28 @@ function Player:Load()
     end
 end
 
-function Player:Update(dt, platform)
+function Player:Update(dt)
+
     self.speedY = self.speedY + self.gravity * dt
+    self.feeling:Update(self, dt)
 
-    self:CheckCollisionWithPlatform(platform)
-
+    if self.speedY > self.maxSpeedY then
+        self.speedY = self.maxSpeedY
+    end
+    -- Gérer le cooldown du dash
     if self.dashCooldownTimer > 0 then
         self.dashCooldownTimer = self.dashCooldownTimer - dt
     end
 
-    self.feeling:Update(self, dt)
-
-    self:HandleMovement(dt)
-
+    self:handleMovement(dt)
 
     if self.states[self.currentState].Update then
         self.states[self.currentState].Update(self, dt)
-    end    
-    self.y = self.y + self.speedY * dt
-
-    if (self.dashCooldownTimer <= 0 and self.dashCount < self.maxDash) then
-        love.graphics.setColor(255, 0, 0)
-    else
-        love.graphics.setColor(255, 255, 255)
-    end
-
-    if self.sprite then
-        love.graphics.draw(self.sprite, self.x, self.y)
-    else
-        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
     end
 end
 
-function Player:Draw()
-    if (self.dashCooldownTimer <= 0 and self.dashCount < self.maxDash) then
-        love.graphics.setColor(255, 0, 0)
-    else
-        love.graphics.setColor(255, 255, 255)
-    end
-
-    if self.sprite then
-        love.graphics.draw(self.sprite, self.x, self.y)
-    else
-        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
-    end
-end
-
-function Player:HandleMovement(dt)
-
+function Player:handleMovement(dt)
+    
     local buttonPressed = 0
     -- Vérifier si le joueur veut planer pendant la chute (par exemple avec la touche "space")
     if self.currentFeeling == 1 then
@@ -124,21 +101,35 @@ function Player:HandleMovement(dt)
 
     if love.keyboard.isDown('u') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Neutral)
-        self.currentFeeling = 0
+        self.feelingCount = 0
+        self.changingState = true
     end
     if love.keyboard.isDown('i') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Sadness)
-        self.currentFeeling = 1
+        self.feelingCount = 1
+        self.changingState = true
     end
     if love.keyboard.isDown('o') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Anger)
-        self.currentFeeling = 2
+        self.feelingCount = 2
+        self.changingState = true
     end
     if love.keyboard.isDown('p') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Joy)
-        self.currentFeeling = 3
+        self.feelingCount = 3
+        self.changingState = true
     end
 
+        -- Vérifier si le joueur veut planer pendant la chute (par exemple avec la touche "space")
+        if self.currentFeeling == 1 then
+            if self.currentState == STATES.FALLING then
+                if love.keyboard.isDown("space") then  -- Si "space" est pressé
+                    -- Appliquer l'effet de planage en réduisant la vitesse verticale
+                    self.speedY = self.speedY * 0.85  -- Par exemple, réduire la vitesse de 2% à chaque frame
+                end
+            end
+        end
+        
     if love.keyboard.isDown('lshift') and self.dashCooldownTimer <= 0 and buttonPressed < 1 then
         if self.onGround or (not self.onGround and not self.hasDashedInAir) then
             buttonPressed = buttonPressed + 1
@@ -178,15 +169,45 @@ function Player:HandleMovement(dt)
     end
 end
 
-function Player:CheckCollisionWithPlatform(platform)
-    if self.y + self.height <= platform.y and 
-       self.y + self.height + self.speedY * love.timer.getDelta() >= platform.y and 
-       self.x + self.width > platform.x and 
-       self.x < platform.x + platform.width then
-        self.y = platform.y - self.height
-        self.speedY = 0
-        self.onGround = true 
+function Player:SetPosition(x, y)
+    self.x = x
+    self.y = y
+end
+
+function Player:GoToDirection(x, y, speed)
+    if speed > 0 then
+        self.mSpeed = speed
     end
+
+    local position = self:GetPosition()
+    local X = x - position.x
+    local Y = y - position.y
+
+    local success = Normalize(X,Y)
+    if not success then
+        return false
+    end
+
+    self.dirX = X
+    self.dirY = Y
+    return true
+end
+
+function Player:GetPosition(offsetX, offsetY)
+    return {
+        x = self.x + (offsetX or 0), -- Ajoute l'offset X à la position X actuelle
+        y = self.y + (offsetY or 0)  -- Ajoute l'offset Y à la position Y actuelle
+    }
+end
+
+function Normalize(x, y)
+    local magnitude = math.sqrt(x^2 + y^2)
+    if magnitude == 0 then
+        return false -- Impossible de normaliser un vecteur nul
+    end
+    x = x / magnitude
+    y = y / magnitude
+    return true
 end
 
 function Player:ChangeState(newState)
