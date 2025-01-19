@@ -20,6 +20,7 @@ function Player:New(x, y)
         dirX = 0,
         dirY = 0,
         jumpPower = -300,  
+        jumpCount = 2,
         gravity = 800,
         sprite = nil,
         width = 50,   
