@@ -52,6 +52,10 @@ PlayerStates.moving = {
         print("Entrée dans l'état 'moving'")
     end,
     Update = function(player, dt)
+        if not player.isStomping then
+            player.speedY = player.speedY + (player.gravity * dt)
+        end
+
         handleMovement(player, dt)
 
         if not player.onGround then
@@ -102,9 +106,8 @@ PlayerStates.jumping = {
 PlayerStates.falling = {
     Enter = function(player)
         print("Entrée dans l'état 'falling'")
-        player.onGround = false
         player.dirY = 1
-
+        player.speedY = 0
     end,
     Update = function(player, dt)
         -- Transition vers 'idle' si au sol
@@ -117,7 +120,6 @@ PlayerStates.falling = {
         end
 
         handleMovement(player, dt)
-
 
 
     end,
@@ -160,15 +162,13 @@ PlayerStates.dashing = {
             player.dashDirectionX = player.dashDirectionX / magnitude
             player.dashDirectionY = player.dashDirectionY / magnitude
         end
-
     end,
     Update = function(player, dt)
         local distance = player.speedDistance * dt
-
         -- Mettre à jour les positions selon les directions
         player.x = player.x + player.dashDirectionX * distance
         player.y = player.y + player.dashDirectionY * distance
-
+        
         -- Réduire le temps du dash
         player.dashTimer = player.dashTimer - dt
 
@@ -181,15 +181,12 @@ PlayerStates.dashing = {
             end
         end
 
-
-        if player.dashTimer <= 0 then
-            player:ChangeState(STATES.IDLE)
-        end
     end,
     Exit = function(player)
         print("Sortie de l'état 'dashing'")
         player.dashDirectionX = 0
         player.dashDirectionY = 0
+        player.onGround = false
     end
 }
 

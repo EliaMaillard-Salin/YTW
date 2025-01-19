@@ -1,4 +1,4 @@
-local PlayerStates = require("PlayerStates")
+Slocal PlayerStates = require("PlayerStates")
 local PlayerFeeling = require("PlayerFeeling")
 
 Player = {}
@@ -29,7 +29,7 @@ function Player:New(x, y)
         dashCount = 0,
         maxDash = 1,
         dashTimer = 0,
-        dashCooldown = 1,
+        dashCooldown = 0.5,
         dashCooldownTimer = 0,
         dashStartX = 0,
         dashStartY = 0,
