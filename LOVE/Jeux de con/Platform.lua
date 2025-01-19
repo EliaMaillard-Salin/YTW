@@ -15,8 +15,8 @@ end
 
 function Platform:draw()
     love.graphics.setColor(1, 0, 0)
-    print(self.x,self.y,self.width,self.height)
-    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+    love.graphics.rectangle("fill",self.x,self.y,self.width,self.height)
+    love.graphics.setColor(1,1,1)
 end
 
 return Platform

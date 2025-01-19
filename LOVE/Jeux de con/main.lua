@@ -3,12 +3,13 @@ local Platform = require "Platform"
 local bump = require "bump"
 
 -- Crée un monde avec une taille de cellule de 50
-local world = bump.newWorld(50)
+local worldCollider = bump.newWorld(50)
+love.window.setMode(1920, 1080)
 
 local player = nil
 local platforms = {}
 
-local world
+local world = require ("World")
 local Player = require ("Player")
 local Platform = require ("Platform")
 
@@ -21,20 +22,16 @@ function love.load()
     player = Player:New(0, love.graphics.getHeight() - 300)
     player:Load()
     -- Ajouter les objets au monde `bump`
-    world:add(player, player.x, player.y, player.width, player.height)
-    world:add(LESOL, LESOL.x, LESOL.y, LESOL.width, LESOL.height)
-    world:add(TADARONNE, TADARONNE.x, TADARONNE.y,TADARONNE.width,TADARONNE.height)
-
-    -- Sauvegarder les plateformes
-    table.insert(platforms, LESOL)
-    table.insert(platforms, TADARONNE)
+    worldCollider:add(player, player.x, player.y, player.width, player.height)
+    world:Create()
+    world:Load(worldCollider)
 end
 
 function love.update(dt)
     -- Mettre à jour les mouvements du joueur q
     player:Update(dt)
 
-    local actualX, actualY, cols, len = world:move(player, player.x, player.y)
+    local actualX, actualY, cols, len = worldCollider:move(player, player.x, player.y)
 
     player.x, player.y = actualX, actualY
     
@@ -47,22 +44,14 @@ function love.update(dt)
         end
     end
 
-    world:update(player, player.x, player.y)
+    worldCollider:update(player, player.x, player.y)
+
+    world:Update(dt,player)
 
 end
 
 function love.draw()
     -- Dessiner le joueur
-    love.graphics.setColor(0, 1, 0) -- Vert
-    love.graphics.rectangle("fill", player.x, player.y, player.width, player.height)
-
-    -- Dessiner les plateformes
-    love.graphics.setColor(1, 1, 0) -- Jaune
-    for _, platform in ipairs(platforms) do
-        love.graphics.rectangle("fill", platform.x, platform.y, platform.width, platform.height)
-        
-    end
-
     if player.onGround then
         love.graphics.setColor(1, 0, 0) -- Rouge
         love.graphics.print("On Ground", player.x, player.y - 20)
@@ -70,4 +59,7 @@ function love.draw()
         love.graphics.setColor(1, 0, 0) -- Rouge
         love.graphics.print("Not on Ground", player.x, player.y - 20)
     end
+
+    love.graphics.setColor(1,1,1)
+    world:Draw(player)
 end

@@ -7,25 +7,25 @@ local Platform = require ("Platform")
 Level1 ={
     platformsCount = 42,
     platforms = {
-        {x = 0, y  = 2700, w = 300, h = 50},
-        {x = 260, y= 3050, w= 280, h= 180},
-        {x = 970, y= 2590, w= 280, h= 180},
-        {x = 2400, y= 2500, w= 280, h= 180},
-        {x = 2660, y= 2500, w= 280, h= 180},
-        {x = 3360, y= 2500, w= 280, h= 180},
-        {x = 3540, y= 2500, w= 280, h= 180},
-        {x = 2500, y= 1750, w= 280, h= 180},
+        {x = -100, y  = 3200, w = 80000, h = 50},
+        {x = 260, y= 3000, w= 280, h= 50},
+        {x = 970, y= 2590, w= 280, h= 50},
+        {x = 2400, y= 2500, w= 280, h= 50},
+        {x = 2660, y= 2500, w= 280, h= 50},
+        {x = 3360, y= 2500, w= 280, h= 50},
+        {x = 3540, y= 2500, w= 280, h= 50},
+        {x = 2500, y= 1750, w= 280, h= 50},
         {x = 3880, y= 550, w= 100, h= 2132},
         {x = 3880, y= 0, w= 100, h= 440},
-        {x = 2340, y= 1500, w= 150, h= 180},
-        {x = 209, y= 876, w= 415, h= 180},
-        {x = 1520, y= 415, w= 150, h= 180},
+        {x = 2340, y= 1500, w= 150, h= 50},
+        {x = 209, y= 876, w= 415, h= 50},
+        {x = 1520, y= 415, w= 150, h= 50},
         {x = 1960, y= 0, w= 110, h= 600},
-        {x = 2400, y= 390, w= 150, h= 180},
+        {x = 2400, y= 390, w= 150, h= 50},
         {x = 4450, y= 0, w= 100, h= 1940},
-        {x = 4565, y= 1515, w= 1800, h= 100},
-        {x = 4920, y= 2200, w= 155, h= 180},
-        {x = 6800, y= 2110, w= 150, h= 180},
+        {x = 4565, y= 1515, w= 500, h= 100},
+        {x = 4920, y= 2200, w= 155, h= 50},
+        {x = 6800, y= 2110, w= 150, h= 50},
         {x = 6095, y= 1155, w= 140, h= 100},
         {x = 5740, y= 910, w= 520, h= 100},
         {x = 6095, y= 885, w= 140, h= 100},
@@ -61,7 +61,7 @@ Camera = {}
 function Camera:Create()
     local cam = {
         x = 0,
-        y = 3220,
+        y = 0,
         scaleX = 1,
         scaleY = 1,
         rotation = 0,
@@ -69,17 +69,14 @@ function Camera:Create()
         offsetY = 0,
         stateCount = 0
     }
-    setmetatable(cam, Camera)
+    setmetatable(cam, self)
     self.__index = self
     Menu:Init(1920,1080)
     return cam
 end
 
-
-
 function Camera:set()
   love.graphics.push()
---   love.graphics.scale(1 / self.scaleX, 1 / self.scaleY)
   love.graphics.translate(-self.x, -self.y)
 end
 
@@ -87,74 +84,52 @@ function Camera:unset()
   love.graphics.pop()
 end
 
-function Camera:move(dx, dy)
-  self.x = self.x + (dx or 0)
-  self.y = self.y + (dy or 0)
-end
-
-function Camera:scale(sx, sy)
-  sx = sx or 1
-  self.scaleX = self.scaleX * sx
-  self.scaleY = self.scaleY * (sy or sx)
-end
-
-function Camera:setPosition(x, y)
-  self.x = x or self.x
-  self.y = y or self.y
-end
 
 function World:Create()
     local world = {
         parallax = nil,
         currentState = nil,
-        camera = Camera:Create(),
-        onPause = true,
+        camera = nil,
+        onPause = false,
         pauseDelay = 0,    
         platforms = {}
     }
     setmetatable(world, self)
     self.__index = self
     self.parallax = Parallax:Create(1920,1080)
+    self.pauseDelay = 0
+    self.camera = Camera:Create()
     return world
 end
 
-function World:Load()
+function World:Load(worldCollider)
+    self.pauseDelay = 0
     self.platforms = {}
     for i = 1,Level1.platformsCount, 1 do
         self.platforms[i]  = Platform:new(Level1.platforms[i].x, Level1.platforms[i].y - (1080*2) ,Level1.platforms[i].w,Level1.platforms[i].h)
+        worldCollider:add(self.platforms[i], self.platforms[i].x,self.platforms[i].y,self.platforms[i].width,self.platforms[i].height)
     end
 end
 
-function World:Update(dt, player,platform)
+function World:Update(dt,player)
     self.pauseDelay = self.pauseDelay + dt
-    if self.onPause == false then
-        player:Update(dt,platform)
-        if player.changingState then 
-            self.stateCount = player.currentFeeling
-            self.parallax:ChangeState(self.stateCount)
-            player.changingState = false
-        end
-        --local offsetY = player.y - self.camera.y
-        local offsetX = player.x - self.camera.x
-        self.camera.x = player.x
-        self.parallax:Update(dt, offsetX)
-    end
 
-    if love.keyboard.isDown("escape")  and self.pauseDelay > 0.5 then
-        self.pauseDelay = 0
-        if self.onPause then
-        
-        else
-            Menu:Update()
-        end
-        self.onPause = not self.onPause
+    if player.changingState then
+        self.stateCount = player.currentFeeling
+        self.parallax:ChangeState(self.stateCount)
+        player.changingState = false
     end
+    --local offsetY = player.y - self.camera.y
+    local offsetX = player.x - self.camera.x
+    self.camera.x = player.x
+    self.parallax:Update(dt, offsetX)
     
 end
 
 
 function World:Draw(player)
     self.parallax:Draw()
+    print(type(player))
     player:Draw()
     for i = 1,Level1.platformsCount, 1 do 
         self.platforms[i]:draw()

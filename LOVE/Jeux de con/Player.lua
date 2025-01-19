@@ -94,22 +94,22 @@ function Player:handleMovement(dt)
 
     if love.keyboard.isDown('u') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Neutral)
-        self.feelingCount = 0
+        self.currentFeeling = 0
         self.changingState = true
     end
     if love.keyboard.isDown('i') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Sadness)
-        self.feelingCount = 1
+        self.currentFeeling = 1
         self.changingState = true
     end
     if love.keyboard.isDown('o') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Anger)
-        self.feelingCount = 2
+        self.currentFeeling = 2
         self.changingState = true
     end
     if love.keyboard.isDown('p') then 
         self.feeling:SwitchFeeling(self.feeling.allFeelings.Joy)
-        self.feelingCount = 3
+        self.currentFeeling = 3
         self.changingState = true
     end
 
@@ -219,6 +219,7 @@ function Player:ChangeState(newState)
 end
 
 function Player:Draw()
+
     if (self.dashCooldownTimer <= 0 and self.dashCount < self.maxDash) then
         love.graphics.setColor(255, 0, 0)
     else
@@ -231,8 +232,10 @@ function Player:Draw()
         love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
     end
     love.graphics.setColor(255, 255, 255)
+    love.graphics.push("all")
     love.graphics.scale(3, 3)
     love.graphics.draw(self.sprites[self.currentFeeling], self.x/3,self.y /3)
-    love.graphics.scale(1, 1)
+    love.graphics.pop()
+
 end
 return Player
