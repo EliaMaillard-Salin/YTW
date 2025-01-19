@@ -16,7 +16,7 @@ function Player:New(x, y)
         y = y,
         speedX = 150,  
         speedY = 1,    
-        maxSpeedY = 100,
+        maxSpeedY = 300,
         dirX = 0,
         dirY = 0,
         jumpPower = -300,  
@@ -34,18 +34,18 @@ function Player:New(x, y)
         dashStartX = 0,
         dashStartY = 0,
         dashDirection = " ",
-        timer = 0, 
         hasDashedInAir = false,
         feeling = PlayerFeeling:Create(),
-        changingState = false,
         states = PlayerStates,
         currentState = STATES.IDLE,
-        currentFeeling = 0
+        currentFeeling = 0,
+        isColliding = false,
+        nextX = 0,
+        nextY = 50,
     }
     setmetatable(obj, self)
     self.__index = self  
     
-    print("Player created with state: " .. tostring(obj.state))  -- Debugging statement
     return obj
 end
 
@@ -60,16 +60,13 @@ function Player:Load()
     end
 end
 
-function Player:update(dt)
+function Player:Update(dt)
 
+    self.speedY = self.speedY + self.gravity * dt
     self.feeling:Update(self, dt)
-    self.dirX = 0
-    self.dirY = 0
-    
-    if not self.onGround then 
-        self.speedY = self.speedY + self.gravity * dt
-    else
-        self.speedY = self.gravity * dt
+
+    if self.speedY > self.maxSpeedY then
+        self.speedY = self.maxSpeedY
     end
     -- Gérer le cooldown du dash
     if self.dashCooldownTimer > 0 then
@@ -81,12 +78,10 @@ function Player:update(dt)
     if self.states[self.currentState].Update then
         self.states[self.currentState].Update(self, dt)
     end
-
-    self:Move(dt)
 end
 
 function Player:handleMovement(dt)
-
+    
     local buttonPressed = 0
 
     if love.keyboard.isDown('u') then 
@@ -159,25 +154,9 @@ function Player:handleMovement(dt)
     end
 end
 
-function Player:CheckCollisionWithPlatform(platform)
-    if self.y + self.height <= platform.y and 
-       self.y + self.height + self.speedY * love.timer.getDelta() >= platform.y and 
-       self.x + self.width > platform.x and 
-       self.x < platform.x + platform.width then
-        self.y = platform.y - self.height
-        self.speedY = 0
-        self.onGround = true 
-    end
-end
-
-
-function Player:SetDirection(x, y, speed)
-    if speed > 0 then
-        self.mSpeed = speed
-    end
-
-    self.dirX = x
-    self.dirY = y
+function Player:SetPosition(x, y)
+    self.x = x
+    self.y = y
 end
 
 function Player:GoToDirection(x, y, speed)
@@ -214,16 +193,6 @@ function Normalize(x, y)
     x = x / magnitude
     y = y / magnitude
     return true
-end
-
-function Player:Move(dt)
-    self.x = self.x + (self.dirX * self.speedX * dt)
-    if not (self.onGround == true and self.speedY > 0) then
-        self.y = self.y +  ( self.speedY * dt )
-        if self.speedY > self.maxSpeedY then
-            self.speedY = self.maxSpeedY
-        end
-    end
 end
 
 function Player:ChangeState(newState)
