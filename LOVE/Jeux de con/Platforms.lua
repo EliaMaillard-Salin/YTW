@@ -39,3 +39,4 @@ function Platform:Draw()
     end
 end
 
+return Platform

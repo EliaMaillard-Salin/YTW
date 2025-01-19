@@ -1,6 +1,7 @@
 
 require ("Player")
 require ("Parallax")
+require ("Menu")
 
 World = {}
 
@@ -14,10 +15,12 @@ function Camera:Create()
         scaleY = 1,
         rotation = 0,
         offsetX = 0,
-        offsetY = 0
+        offsetY = 0,
+        onPause = false
     }
     setmetatable(cam, Camera)
     self.__index = self
+    Menu:Init(1920,1080)
     return cam
 end
 
@@ -61,19 +64,40 @@ end
 
 function World:Update(dt, player)
 
-    player:update(dt)
-    if player.changingState then 
-        self.current = self.allStates[player.feelingCount]
-        player.changingState = false
+    if self.onPause == false then
+        print("go")
+        player:update(dt)
+        if player.changingState then 
+            self.current = self.allStates[player.feelingCount]
+            player.changingState = false
+        end
+        --local offsetY = player.y - self.camera.y
+        local offsetX = player.x - self.camera.x
+        self.camera.x = player.x
+        self.parallax:Update(dt, offsetX)
     end
-    --local offsetY = player.y - self.camera.y
-    local offsetX = player.x - self.camera.x
-    self.camera.x = player.x
-    self.parallax:Update(dt, offsetX)
+
+    if love.keyboard.isDown("escape") then
+        if self.onPause then
+        
+        else
+            Menu:Update()
+        end
+        
+        
+        self.onPause = not self.onPause
+    end
     
 end
 
 
-function World:Draw()
-    self.parallax:Draw()
+function World:Draw(player)
+    if self.onPause then
+        Menu:Draw()
+    else
+        self.parallax:Draw()
+        player:draw()
+    end
 end
+
+return World

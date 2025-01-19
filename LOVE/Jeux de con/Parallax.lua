@@ -23,10 +23,10 @@ function Parallax:Create(width, height)
     self.BackGrounds32 = BackGround:Create(400, love.graphics.newImage("BG3.png"),width, height)
     self.BackGrounds42 = BackGround:Create(500, love.graphics.newImage("BG4.png"),width, height)
 
-    self.BackGrounds12.posX = self.BackGrounds1.posX + self.BackGrounds1.width -10
-    self.BackGrounds22.posX = self.BackGrounds2.posX + self.BackGrounds2.width -10
-    self.BackGrounds32.posX = self.BackGrounds3.posX + self.BackGrounds3.width -10
-    self.BackGrounds42.posX = self.BackGrounds4.posX + self.BackGrounds4.width -10
+    self.BackGrounds12.posX = self.BackGrounds1.posX + self.BackGrounds1.width - 10
+    self.BackGrounds22.posX = self.BackGrounds2.posX + self.BackGrounds2.width - 10
+    self.BackGrounds32.posX = self.BackGrounds3.posX + self.BackGrounds3.width - 10
+    self.BackGrounds42.posX = self.BackGrounds4.posX + self.BackGrounds4.width - 10
 
     return parallax
 end
