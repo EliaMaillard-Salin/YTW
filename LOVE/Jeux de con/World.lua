@@ -16,7 +16,6 @@ function Camera:Create()
         rotation = 0,
         offsetX = 0,
         offsetY = 0,
-        onPause = false,
         stateCount = 0
     }
     setmetatable(cam, Camera)
@@ -55,8 +54,9 @@ function World:Create()
     local world = {
         parallax = nil,
         currentState = nil,
-        camera = Camera:Create()
-    }
+        camera = Camera:Create(),
+        onPause = false,
+        pauseDelay = 0,    }
     setmetatable(world, self)
     self.__index = self
     self.parallax = Parallax:Create(1920,1080)
@@ -64,9 +64,8 @@ function World:Create()
 end
 
 function World:Update(dt, player)
-
-    if self.onPause == nil then
-        print("go")
+    self.pauseDelay = self.pauseDelay + dt
+    if self.onPause == false then
         player:update(dt)
         if player.changingState then 
             self.stateCount = player.feelingCount
@@ -79,15 +78,13 @@ function World:Update(dt, player)
         self.parallax:Update(dt, offsetX)
     end
 
-    if love.keyboard.isDown("escape") then
-        print("a")
+    if love.keyboard.isDown("escape")  and self.pauseDelay > 0.5 then
+        self.pauseDelay = 0
         if self.onPause then
         
         else
             Menu:Update()
         end
-        
-        
         self.onPause = not self.onPause
     end
     
@@ -95,11 +92,10 @@ end
 
 
 function World:Draw(player)
+    self.parallax:Draw()
+    player:draw()
     if self.onPause then
         Menu:Draw()
-    else
-        self.parallax:Draw()
-        player:draw()
     end
 end
 
