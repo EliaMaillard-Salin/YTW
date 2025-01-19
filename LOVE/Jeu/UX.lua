@@ -3,6 +3,7 @@ list_button = {}
 
 function CreateButton(x, y, image_path)
     Button = {}
+    local Button = {}
     Button.x = x
     Button.y = y
     Button.image = love.graphics.newImage("images/"..image_path..".png")
@@ -20,6 +21,10 @@ function DetectClick(element, x, y)
             --     print("yes")
             -- end
             love.graphics.setColor(55, 00, 00, 55)
+            if love.mouse.isDown(1) then 
+                --CHANGEMENT DE SCENE 
+                love.graphics.setColor(55, 00, 00, 55)
+            end
         end
     end
 end
