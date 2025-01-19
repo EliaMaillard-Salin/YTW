@@ -1,4 +1,5 @@
 local bump = require "bump"
+local PlayerFeeling = require("PlayerFeeling")
 
 -- Crée un monde avec une taille de cellule de 50
 local worldCollider = bump.newWorld(50)

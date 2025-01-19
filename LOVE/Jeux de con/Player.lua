@@ -94,9 +94,6 @@ function Player:Update(dt)
     print(self.jumpCount)
     self.speedY = self.speedY + self.gravity * dt
 
-    if self.isStomping then
-        print(self.speedY)
-    end
 
     self.feeling:Update(self, dt)
 
