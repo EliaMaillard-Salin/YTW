@@ -38,6 +38,7 @@ function love.update(dt)
 
     player.x, player.y = actualX, actualY
 
+    player.onGround = false
 
     for _, col in ipairs(cols) do
         if col.other.type == "plateform" then

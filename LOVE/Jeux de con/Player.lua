@@ -19,7 +19,7 @@ function Player:New(x, y)
         maxSpeedY = 300,
         dirX = 0,
         dirY = 0,
-        jumpPower = -300,  
+        jumpPower = -500,  
         gravity = 800,
         sprite = nil,
         width = 50,   
@@ -29,7 +29,7 @@ function Player:New(x, y)
         dashCount = 0,
         maxDash = 1,
         dashTimer = 0,
-        dashCooldown = 1,
+        dashCooldown = 0.5,
         dashCooldownTimer = 0,
         dashStartX = 0,
         dashStartY = 0,
@@ -89,6 +89,7 @@ function Player:Update(dt)
     if self.isStomping then
         print(self.speedY)
     end
+
     self.feeling:Update(self, dt)
 
     -- Gérer le cooldown du dash
