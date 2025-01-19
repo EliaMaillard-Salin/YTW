@@ -83,6 +83,7 @@ PlayerStates.jumping = {
         player.onGround = false
         player.speedY = player.jumpPower
         player.jumpCount = player.jumpCount - 1 -- Consommer un saut
+        player.dirY = -1
         if player.jumpCount <= 0 then 
             player.jumpCount = 0
         end
@@ -113,10 +114,13 @@ PlayerStates.jumping = {
 PlayerStates.falling = {
     Enter = function(player)
         print("Entrée dans l'état 'falling'")
-        player.onGround = false
+        player.dirY = 1
+        player.speedY = 0
     end,
     Update = function(player, dt)
-        player.speedY = player.speedY + (player.gravity * dt)
+        if not player.isStomping then
+            player.speedY = player.speedY + (player.gravity * dt)
+        end        
         handleMovement(player, dt)
 
         if player.onGround then
