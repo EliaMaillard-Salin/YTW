@@ -1,8 +1,16 @@
-require ("PlayerFeeling")
+local PlayerStates = require("PlayerStates")
+local PlayerFeeling = require("PlayerFeeling")
 
 Player = {}
 
-function Player:new(x, y)
+local STATES = {}
+STATES.DASHING = "dashing"
+STATES.IDLE = "idle"
+STATES.JUMPING = "jumping"
+STATES.FALLING = "falling"
+STATES.MOVING = "moving"
+
+function Player:New(x, y)
     local obj = {
         x = x,
         y = y,
@@ -10,7 +18,7 @@ function Player:new(x, y)
         dirY = 0,
         speedX = 150,  
         speedY = 0,    
-        jumpPower = -300,  
+        jumpPower = -500,  
         gravity = 800,
         sprite = nil,
         width = 50,   
@@ -27,42 +35,58 @@ function Player:new(x, y)
         dashDirection = " ",
         timer = 0, 
         hasDashedInAir = false,
-        feeling = PlayerFeeling:Create(),
-        feelingCount = 0,
+        states = PlayerStates,
+        currentState = STATES.IDLE,
+        feeling = nil,
+        currentFeeling = 0,
         changingState = false
     }
     setmetatable(obj, self)
     self.__index = self  
+    obj.feeling = PlayerFeeling:Create()
+    
+    print("Player created with state: " .. tostring(obj.state))  -- Debugging statement
     return obj
 end
 
-function Player:load()
+function Player:Load()
     if self.sprite then
         self.width = self.sprite:getWidth()
         self.height = self.sprite:getHeight()
     end
+
+    if self.states[self.currentState].Enter then
+        self.states[self.currentState].Enter(self)
+    end
 end
 
-function Player:update(dt)
+
+function Player:Update(dt, platform)
+
+    self.timer = self.timer + dt
+
     
     self.dirX = 0
     self.dirY = 0
-    --self.feeling.Update()
-
     self.speedY = self.speedY + self.gravity * dt
-
-    -- Gérer le cooldown du dash
+    
+    self:CheckCollisionWithPlatform(platform)
+    
     if self.dashCooldownTimer > 0 then
         self.dashCooldownTimer = self.dashCooldownTimer - dt
     end
-
-    self.timer = self.timer + dt
+    
+    self.feeling:Update(self, dt)
+    
     self:handleMovement(dt)
     self:Move(dt)
-end
-
-function Player:draw()
     
+    
+    if self.states[self.currentState].Update then
+        self.states[self.currentState].Update(self, dt)
+    end    
+    self.y = self.y + self.speedY * dt
+
     if (self.dashCooldownTimer <= 0 and self.dashCount < self.maxDash) then
         love.graphics.setColor(255, 0, 0)
     else
@@ -78,117 +102,92 @@ function Player:draw()
     love.graphics.setColor(255, 255, 255)
 end
 
-function Player:handleMovement(dt)
-    -- Gérer le dash avec cooldown
-    if love.keyboard.isDown('u') then 
-        self.feeling:SwitchFeeling(self.feeling.allFeelings.Neutral)
-        self.feelingCount = 0
-        self.changingState = true
-    end
-    if love.keyboard.isDown('i') then 
-        self.feeling:SwitchFeeling(self.feeling.allFeelings.Sadness)
-        self.feelingCount = 1
-        self.changingState = true
-    end
-    if love.keyboard.isDown('o') then 
-        self.feeling:SwitchFeeling(self.feeling.allFeelings.Anger)
-        self.feelingCount = 2
-        self.changingState = true
-    end
-    if love.keyboard.isDown('p') then 
-        self.feeling:SwitchFeeling(self.feeling.allFeelings.Joy)
-        self.feelingCount = 3
-        self.changingState = true
+function Player:Draw()
+    if (self.dashCooldownTimer <= 0 and self.dashCount < self.maxDash) then
+        love.graphics.setColor(255, 0, 0)
+    else
+        love.graphics.setColor(255, 255, 255)
     end
 
-    if love.keyboard.isDown('lshift') and self.dashCooldownTimer <= 0 then
-        -- Si le joueur est au sol ou qu'il n'a pas encore effectué de dash en l'air
-        if self.onGround or (not self.onGround and not self.hasDashedInAir) then
-            -- Déterminer la direction du dash
-            if love.keyboard.isDown('d') and love.keyboard.isDown('z') then
-                -- Dash diagonale haut-droite
-                self.dashDirection = "right_up"
-            elseif love.keyboard.isDown('q') and love.keyboard.isDown('z') then
-                -- Dash diagonale haut-gauche
-                self.dashDirection = "left_up"
-            elseif love.keyboard.isDown('d') then
-                -- Dash horizontal droite
-                self.dashDirection = "right"
-            elseif love.keyboard.isDown('q') then
-                -- Dash horizontal gauche
-                self.dashDirection = "left"
-            elseif love.keyboard.isDown('space') then
-                -- Dash vertical (haut)
-                self.dashDirection = "up"
-            end
-
-            -- Démarrer un dash et initialiser le timer
-            self.dashTimer = 0.2  -- Durée du dash en secondes
-            self.dashStartX = self.x  -- Enregistrer la position de départ
-            self.dashStartY = self.y  -- Enregistrer la position de départ
-            self.dashCount = self.dashCount + 1
-
-            -- Si c'est un dash en l'air, marquer cette condition
-            if not self.onGround then
-                self.hasDashedInAir = true
-            end
-
-            -- Réinitialiser le cooldown
-            self.dashCooldownTimer = self.dashCooldown
-        end
-    end
-    
-    -- Si un dash est actif, déplacer le joueur progressivement
-    if self.dashTimer > 0 then
-        -- Calculer le déplacement en fonction de la direction du dash
-        if self.dashDirection == "right" then
-            self.x = self.dashStartX + (self.speedDistance * (1 - self.dashTimer / 0.2))  -- Déplacement progressif vers la droite
-        elseif self.dashDirection == "left" then
-            self.x = self.dashStartX - (self.speedDistance * (1 - self.dashTimer / 0.2))  -- Déplacement progressif vers la gauche
-        elseif self.dashDirection == "up" then
-            self.y = self.dashStartY - (self.speedDistance * (1 - self.dashTimer / 0.2))  -- Déplacement progressif vers le haut
-        elseif self.dashDirection == "right_up" then
-            -- Déplacement en diagonale haut-droite
-            self.y = self.dashStartY - (self.speedDistance * (1 - self.dashTimer / 0.2))  -- Déplacement vertical
-            self.x = self.dashStartX + (self.speedDistance * (1 - self.dashTimer / 0.2))  -- Déplacement horizontal
-        elseif self.dashDirection == "left_up" then
-            -- Déplacement en diagonale haut-gauche
-            self.y = self.dashStartY - (self.speedDistance * (1 - self.dashTimer / 0.2))  -- Déplacement vertical
-            self.x = self.dashStartX - (self.speedDistance * (1 - self.dashTimer / 0.2))  -- Déplacement horizontal
-        end
-        -- Réduire le timer du dash
-        self.dashTimer = self.dashTimer - dt
-    end
-
-    -- Gestion du cooldown du dash
-    if self.dashCooldownTimer > 0 then
-        self.dashCooldownTimer = self.dashCooldownTimer - dt  -- Décrémenter le cooldown
-    end
-
-    -- Réinitialiser le dashCount au sol
-    if self.onGround then
-        -- Si le joueur touche le sol, réinitialiser le dash en l'air
-        self.hasDashedInAir = false
-        self.dashCount = 0  -- Réinitialiser le compteur de dashes lorsqu'on est au sol
-    end
-
-    -- Mouvement normal (en dehors du dash)
-    if love.keyboard.isDown('d') then
-        self.direction = "right"
-        self.dirX = 1
-    elseif love.keyboard.isDown('q') then
-        self.direction = "left"
-        self.dirX = -1
-    end
-
-    if love.keyboard.isDown('space') and self.onGround then
-        self.direction = "up"
-        self.speedY = self.jumpPower
-        self.onGround = false 
+    if self.sprite then
+        love.graphics.draw(self.sprite, self.x, self.y)
+    else
+        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
     end
 end
 
-function Player:checkCollisionWithPlatform(platform)
+function Player:HandleMovement(dt)
+
+    local buttonPressed = 0
+    -- Vérifier si le joueur veut planer pendant la chute (par exemple avec la touche "space")
+    if self.currentFeeling == 1 then
+        if self.currentState == STATES.FALLING then
+            if love.keyboard.isDown("space") then  -- Si "space" est pressé
+                -- Appliquer l'effet de planage en réduisant la vitesse verticale
+                self.speedY = self.speedY * 0.85  -- Par exemple, réduire la vitesse de 2% à chaque frame
+            end
+        end
+        
+
+    end
+
+    if love.keyboard.isDown('u') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Neutral)
+        self.currentFeeling = 0
+    end
+    if love.keyboard.isDown('i') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Sadness)
+        self.currentFeeling = 1
+    end
+    if love.keyboard.isDown('o') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Anger)
+        self.currentFeeling = 2
+    end
+    if love.keyboard.isDown('p') then 
+        self.feeling:SwitchFeeling(self.feeling.allFeelings.Joy)
+        self.currentFeeling = 3
+    end
+
+    if love.keyboard.isDown('lshift') and self.dashCooldownTimer <= 0 and buttonPressed < 1 then
+        if self.onGround or (not self.onGround and not self.hasDashedInAir) then
+            buttonPressed = buttonPressed + 1
+            if love.keyboard.isDown('d') and love.keyboard.isDown('z') then
+                self.dashDirection = "right_up"
+            elseif love.keyboard.isDown('q') and love.keyboard.isDown('z') then
+                self.dashDirection = "left_up"
+            elseif love.keyboard.isDown('q') and love.keyboard.isDown('s') then
+                self.dashDirection = "left_down"
+            elseif love.keyboard.isDown('d') and love.keyboard.isDown('s') then
+                self.dashDirection = "right_down"
+            elseif love.keyboard.isDown('d') then
+                self.dashDirection = "right"
+            elseif love.keyboard.isDown('q') then
+                self.dashDirection = "left"
+            elseif love.keyboard.isDown('space') then
+                self.dashDirection = "up"
+            end
+
+            -- Initialisation du dash
+            self.dashTimer = 0.2
+            self.dashCount = self.dashCount + 1
+            buttonPressed = 0
+            if not self.onGround then
+                self.hasDashedInAir = true
+            end
+            self.dashCooldownTimer = self.dashCooldown
+            self:ChangeState(STATES.DASHING)
+        end
+    end
+
+    -- Réinitialiser les dashs si au sol
+    if self.onGround then
+        buttonPressed = 0
+        self.hasDashedInAir = false
+        self.dashCount = 0
+    end
+end
+
+function Player:CheckCollisionWithPlatform(platform)
     if self.y + self.height <= platform.y and 
        self.y + self.height + self.speedY * love.timer.getDelta() >= platform.y and 
        self.x + self.width > platform.x and 
@@ -203,5 +202,21 @@ function  Player:Move(dt)
     self.x = self.x + (self.dirX * self.speedX * dt)
     self.y = self.y +  ( self.speedY * dt )
 end
+
+function Player:ChangeState(newState)
+    -- Appeler la fonction `exit` de l'état courant
+    if self.states[self.currentState].Exit then
+        self.states[self.currentState].Exit(self)
+    end
+
+    -- Changer l'état
+    self.currentState = newState
+
+    -- Appeler la fonction `enter` du nouvel état
+    if self.states[self.currentState].Enter then
+        self.states[self.currentState].Enter(self)
+    end
+end
+
 
 return Player
