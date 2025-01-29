@@ -95,6 +95,10 @@ function World:Update(dt,player,worldCollider)
         self.stateCount = player.currentFeeling
         self.parallax:ChangeState(self.stateCount)
         player.changingState = false
+        for i = 1,Level1.platformsCount, 1 do 
+            self.platforms[i].state = self.stateCount
+        end
+
     end
     local offsetY = player.y - self.camera.y
     local offsetX = player.x - self.camera.x
@@ -114,9 +118,13 @@ function World:Draw(player)
 
     print(type(player))
     player:Draw()
+    love.graphics.push("all")
+
+    love.graphics.scale(3,3)
     for i = 1,Level1.platformsCount, 1 do 
         self.platforms[i]:draw()
     end
+    love.graphics.pop()
     love.graphics.setColor(1, 1, 1)
     -- if self.onPause then
     --     Menu:Draw()

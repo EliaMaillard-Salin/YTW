@@ -33,12 +33,4 @@ function love.draw()
     love.graphics.setColor(1,1,1)
     world:Draw(player)
     
-    -- Dessiner le joueur
-    if player.onGround then
-        love.graphics.setColor(1, 0, 0) -- Rouge
-        love.graphics.print("On Ground", player.x, player.y - 20)
-    else
-        love.graphics.setColor(1, 0, 0) -- Rouge
-        love.graphics.print("Not on Ground", player.x, player.y - 20)
-    end
 end
